@@ -18,11 +18,10 @@ function newloc(value) {
 
 function reorder(x) {
   var L = x._L, R = x._R, V = x._V, v = 1;
-  if (L !== null) v += L.n;
-  if (R !== null) v += R.n;
-  x.n = v;
   if (L !== null) {
+    v += L.n;
     if (R !== null) {
+      v += R.n;
       for (var key in this._stats) if (key !== 'n') {
         var fn = this._stats[key];
         x[key] = fn(V) + L[key] + R[key];
@@ -35,6 +34,7 @@ function reorder(x) {
     }
   } else {
     if (R !== null) {
+      v += R.n;
       for (var key in this._stats) if (key !== 'n') {
         var fn = this._stats[key];
         x[key] = fn(V) + R[key];
@@ -46,6 +46,7 @@ function reorder(x) {
       }
     }
   }
+  x.n = v;
 }
 
 function leftRootedRotate(x) {
