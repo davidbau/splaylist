@@ -13,17 +13,37 @@ Location.prototype = {
 function newloc(value, orderstats) {
   var loc = new Location();
   loc._V = value;
-  loc._S = orderstats(value);
+  loc._S = orderstats ? orderstats(value) : null;
   return loc;
 }
 
 function reorder(x) {
-  var L = x._L, R = x._R, S = x._S, k, v;
-  for (k in S) {
-    v = S[k];
-    if (L !== null) v += L[k];
-    if (R !== null) v += R[k];
-    x[k] = v;
+  var L = x._L, R = x._R, S = x._S, v = 1;
+  if (L !== null) v += L.n;
+  if (R !== null) v += R.n;
+  x.n = v;
+  if (S !== null) {
+    if (L !== null) {
+      if (R !== null) {
+        for (key in S) {
+          x[key] = S[key] + L[key] + R[key];
+        }
+      } else {
+        for (key in S) {
+          x[key] = S[key] + L[key];
+        }
+      }
+    } else {
+      if (R !== null) {
+        for (key in S) {
+          x[key] = S[key] + R[key];
+        }
+      } else {
+        for (key in S) {
+          x[key] = S[key];
+        }
+      }
+    }
   }
 }
 
@@ -125,7 +145,7 @@ function findByOrder(tree, key, value) {
       }
       value -= leftval;
     }
-    leftval = S[key];
+    leftval = key === 'n' ? 1 : S[key];
     if (value < leftval) {
       return x;
     }
@@ -179,7 +199,7 @@ function splayByOrder(tree, key, value) {
       }
       value -= leftsum;
     }
-    rootval = root._S[key];
+    rootval = key === 'n' ? 1 : root._S[key];
     if (value < rootval) {
       // Found the value at root, or ran off the left edge.
       found = true;
@@ -188,7 +208,7 @@ function splayByOrder(tree, key, value) {
     R = root._R;
     if (R !== null) {
       value -= rootval;
-      leftsum = R._S[key];
+      leftsum = key === 'n' ? 1 : R._S[key];
       if (R._L !== null) {
         leftsum += R._L[key];
       }
@@ -334,7 +354,7 @@ function dump(out, node, depth) {
 var globalOne = { n: 1 };
 
 var SplayTree = function(orderstats) {
-  this._orderstats = orderstats || function() { return globalOne; };
+  this._orderstats = orderstats;
   this._root = null;
 };
 
