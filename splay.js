@@ -4,7 +4,11 @@ var Location = function() {
   this._P = null;
   this._L = null;
   this._R = null;
-}
+};
+
+Location.prototype = {
+  val: function() { return this._V; }
+};
 
 function newloc(value, orderstats) {
   var loc = new Location();
@@ -441,6 +445,14 @@ remove: function(location) {
     reorder(this._root);
   }
 },
+
+reorder: reorder,
+
+first: function() { return first(this); },
+
+next: successor,
+
+prev: predecessor,
 
 size: function() {
   if (this._root === null) return 0;
