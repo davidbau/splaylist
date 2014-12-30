@@ -17,17 +17,39 @@ function newloc(value) {
 }
 
 function reorder(x) {
-  var L = x._L, R = x._R, V = x._V, v = 1;
+  var L = x._L, R = x._R, V = x._V, v = 1, stats = this._stats;
   if (L !== null) v += L.n;
   if (R !== null) v += R.n;
   x.n = v;
-  if (this._stats) {
-    for (var j = 0; j < this._stats.length; ++j) {
-      var key = this._stats[j];
-      v = V[key];
-      if (L !== null) v += L[key];
-      if (R !== null) v += R[key];
-      x[key] = v;
+  if (stats) {
+    if (L !== null) {
+      if (R !== null) {
+        for (var j = 0, len = stats.length; j < len; ++j) {
+          var key = stats[j];
+          v = V[key] + L[key] + R[key];
+          x[key] = v;
+        }
+      } else {
+        for (var j = 0, len = stats.length; j < len; ++j) {
+          var key = stats[j];
+          v = V[key] + L[key];
+          x[key] = v;
+        }
+      }
+    } else {
+      if (R !== null) {
+        for (var j = 0, len = stats.length; j < len; ++j) {
+          var key = stats[j];
+          v = V[key] + R[key];
+          x[key] = v;
+        }
+      } else {
+        for (var j = 0, len = stats.length; j < len; ++j) {
+          var key = stats[j];
+          v = V[key];
+          x[key] = v;
+        }
+      }
     }
   }
 }
