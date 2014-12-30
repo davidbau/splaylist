@@ -27,12 +27,12 @@ for (var j = 0; j < n; ++j) {
 }
 */
 
-var x = new SplayTree();
+var x = new SplayTree(function(v) { return { n: 1, length: v.length}; });
 for (var j = 0; j < n; ++j) {
-  x.prepend(j);
+  x.prepend('node' + j);
   var k = Math.floor(Math.random() * x.size());
   loc = x.nth(k);
-  assert(loc._V == (j - k));
+  assert(loc._V == 'node' + (j - k));
 }
 
 var end = +(new Date);
