@@ -6,20 +6,25 @@ var Location = function() {
   this._R = null;
 }
 
-function newloc(value, orderstats) {
+function newloc(value) {
   var loc = new Location();
   loc._V = value;
-  loc._S = orderstats(value);
   return loc;
 }
 
 function reorder(x) {
-  var L = x._L, R = x._R, S = x._S, k, v;
-  for (k in S) {
-    v = S[k];
-    if (L !== null) v += L[k];
-    if (R !== null) v += R[k];
-    x[k] = v;
+  var L = x._L, R = x._R, V = x._V, v = 1;
+  if (L !== null) v += L.n;
+  if (R !== null) v += R.n;
+  x.n = v;
+  if (this._stats) {
+    for (var j = 0; j < this._stats.length; ++j) {
+      var key = this._stats[j];
+      v = V[key];
+      if (L !== null) v += L[key];
+      if (R !== null) v += R[key];
+      x[key] = v;
+    }
   }
 }
 
@@ -102,17 +107,17 @@ function splayUp(tree, x) {
         leftRotate(tree, p);
         rightRotate(tree, g);
       }
-      reorder(g);
+      tree.reorder(g);
     }
-    reorder(p);
+    tree.reorder(p);
   }
-  reorder(x);
+  tree.reorder(x);
 }
 
-function findByOrder(tree, key, value) {
+function findByOrder(tree, stat, value) {
   var x = tree._root;
   while (x !== null) {
-    var L = x._L, R = x._R, S = x._S, leftval;
+    var L = x._L, R = x._R, V = x._V, leftval;
     if (L) {
       leftval = L[key];
       if (value < leftval) {
@@ -121,7 +126,7 @@ function findByOrder(tree, key, value) {
       }
       value -= leftval;
     }
-    leftval = S[key];
+    leftval = key === 'n' ? 1 : V[key];
     if (value < leftval) {
       return x;
     }
@@ -161,7 +166,7 @@ function splayByOrder(tree, key, value) {
       if (value < leftsum) {
         if (L._L !== null && value < L._L[key]) {
           rightRootedRotate(root);
-          reorder(root);
+          tree.reorder(root);
           root = L;
         }
         // link left
@@ -175,7 +180,7 @@ function splayByOrder(tree, key, value) {
       }
       value -= leftsum;
     }
-    rootval = root._S[key];
+    rootval = key === 'n' ? 1 : root._V[key];
     if (value < rootval) {
       // Found the value at root, or ran off the left edge.
       found = true;
@@ -184,13 +189,13 @@ function splayByOrder(tree, key, value) {
     R = root._R;
     if (R !== null) {
       value -= rootval;
-      leftsum = R._S[key];
+      leftsum = key === 'n' ? 1 : R._V[key];
       if (R._L !== null) {
         leftsum += R._L[key];
       }
       if (R._R !== null && value >= leftsum) {
         leftRootedRotate(root);
-        reorder(root);
+        tree.reorder(root);
         root = R;
         value -= leftsum;
       }
@@ -217,15 +222,15 @@ function splayByOrder(tree, key, value) {
   root._R = stub._L;
   if (root._R !== null) root._R._P = root;
   // propagate new order statistics
-  while (right !== null) {
-    reorder(right);
+  if (right !== stub) while (right !== null) {
+    tree.reorder(right);
     right = right._P;
   }
-  while (left !== null) {
-    reorder(left);
+  if (left !== stub) while (left !== null) {
+    tree.reorder(left);
     left = left._P;
   }
-  reorder(root);
+  tree.reorder(root);
   tree._root = root;
   return found;
 };
@@ -271,19 +276,21 @@ function shortjson(n) {
   return JSON.stringify(n).replace(/"(\w+)":/g, "$1:");
 }
 
-function dumpnode(node) {
-  var total = {}, str = '' + node._V, k;
-  if (node._S) {
-    for (var k in node._S) {
+function dumpnode(node, stats) {
+  var total = {}, cur = {}, str = '' + node._V, k, j;
+  if (stats) {
+    for (j = 0; j < stats.length; ++j) {
+      k = stats[j];
       total[k] = node[k];
+      cur[k] = node._V[k];
     }
-    str += ' ' + shortjson(node._S);
-    str += ' T' + shortjson(total);
+    str += ' T' + shortjson(total) + ' ' + shortjson(cur);
   }
+  str += ' (' + node.n + ')';
   return str;
 }
 
-function dump(out, node, depth) {
+function dump(tree, out, node, depth) {
   if (!node) {
     out("null");
     return;
@@ -291,9 +298,9 @@ function dump(out, node, depth) {
   depth = depth || 0;
   var result = "";
   if (node._R !== null) {
-    result += dump(out, node._R, depth + 1);
+    result += dump(tree, out, node._R, depth + 1);
   }
-  var line = dumpnode(node),
+  var line = dumpnode(node, tree._stats),
       prev = node, scan = prev._P, j = depth, rchild, rparent;
   if (scan == null) {
     line = '\u2192' + line;
@@ -323,15 +330,15 @@ function dump(out, node, depth) {
   }
   out(line);
   if (node._L !== null) {
-    result += dump(out, node._L, depth + 1);
+    result += dump(tree, out, node._L, depth + 1);
   }
 }
 
 var globalOne = { n: 1 };
 
-var SplayTree = function(orderstats) {
-  this._orderstats = orderstats || function() { return globalOne; };
+var SplayTree = function(stats) {
   this._root = null;
+  this._stats = stats;
 };
 
 SplayTree.prototype = {
@@ -379,7 +386,7 @@ prepend: function(value) {
   var root = newloc(value, this._orderstats);
   root._R = this._root;
   if (root._R !== null) root._R._P = root;
-  reorder(root);
+  this.reorder(root);
   this._root = root;
   return root;
 },
@@ -388,7 +395,7 @@ append: function(value) {
   var root = newloc(value, this._orderstats);
   root._L = this._root;
   if (root._L !== null) root._L._P = root;
-  reorder(root);
+  this.reorder(root);
   this._root = root;
   return root;
 },
@@ -403,9 +410,9 @@ insertAfter: function(location, value) {
     root._R = oldroot._R;
     if (root._R) root._R.P = root;
     oldroot._R = null;
-    reorder(oldroot);
+    this.reorder(oldroot);
   }
-  reorder(root);
+  this.reorder(root);
   this._root = root;
   return root;
 },
@@ -420,9 +427,9 @@ insertBefore: function(location, value) {
     root._L = oldroot._L;
     if (root._L) root._L.P = root;
     oldroot._L = null;
-    reorder(oldroot);
+    this.reorder(oldroot);
   }
-  reorder(root);
+  this.reorder(root);
   this._root = root;
   return root;
 },
@@ -438,9 +445,11 @@ remove: function(location) {
     // asseert: location._R === null
     this._root._L = location._L
     if (this._root._L) this._root._L._P = this._root._L;
-    reorder(this._root);
+    this.reorder(this._root);
   }
 },
+
+reorder: reorder,
 
 size: function() {
   if (this._root === null) return 0;
@@ -451,7 +460,7 @@ dump: function(out) {
   if ('function' != typeof(out)) {
     out = function(s) { console.log(s); }
   }
-  dump(out, this._root);
+  dump(this, out, this._root);
 }
 
 };

@@ -27,7 +27,7 @@ for (var j = 0; j < n; ++j) {
 }
 */
 
-var x = new SplayTree(function(v) { return { n: 1, length: v.length}; });
+var x = new SplayTree(['length']);
 for (var j = 0; j < n; ++j) {
   x.prepend('node' + j);
   var k = Math.floor(Math.random() * x.size());
@@ -37,4 +37,5 @@ for (var j = 0; j < n; ++j) {
 
 var end = +(new Date);
 console.log('time: ' + (end - start) + 'ms for ' + n + ' appends and lookups');
+console.log('total length:', x.stat('length'));
 
