@@ -4,6 +4,10 @@ var Location = function() {
   this._P = null;
   this._L = null;
   this._R = null;
+};
+
+Location.prototype = {
+  val: function() { return this._V; }
 }
 
 function newloc(value) {
@@ -17,14 +21,12 @@ function reorder(x) {
   if (L !== null) v += L.n;
   if (R !== null) v += R.n;
   x.n = v;
-  if (this._stats) {
-    for (var key in this._stats) {
-      var fn = this._stats[key];
-      v = fn(V);
-      if (L !== null) v += L[key];
-      if (R !== null) v += R[key];
-      x[key] = v;
-    }
+  for (var key in this._stats) if (key !== 'n') {
+    var fn = this._stats[key];
+    v = fn(V);
+    if (L !== null) v += L[key];
+    if (R !== null) v += R[key];
+    x[key] = v;
   }
 }
 
@@ -336,11 +338,11 @@ function dump(tree, out, node, depth) {
   }
 }
 
-var globalOne = { n: 1 };
-
 var SplayTree = function(stats) {
+  var copy = { n: function() { return 1; } };
+  for (var k in stats) if (k != 'n') copy[k] = stats[k];
   this._root = null;
-  this._stats = stats;
+  this._stats = copy;
 };
 
 SplayTree.prototype = {
