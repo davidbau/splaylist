@@ -6,6 +6,10 @@ var Location = function() {
   this._R = null;
 }
 
+Location.prototype = {
+  val: function() { return this._V; }
+}
+
 function newloc(value) {
   var loc = new Location();
   loc._V = value;
@@ -450,6 +454,12 @@ remove: function(location) {
 },
 
 reorder: reorder,
+
+first: function() { return first(this); },
+
+next: successor,
+
+prev: predecessor,
 
 size: function() {
   if (this._root === null) return 0;
