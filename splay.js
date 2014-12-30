@@ -18,9 +18,9 @@ function reorder(x) {
   if (R !== null) v += R.n;
   x.n = v;
   if (this._stats) {
-    for (var j = 0; j < this._stats.length; ++j) {
-      var key = this._stats[j];
-      v = V[key];
+    for (var key in this._stats) {
+      var fn = this._stats[key];
+      v = fn(V);
       if (L !== null) v += L[key];
       if (R !== null) v += R[key];
       x[key] = v;
@@ -114,8 +114,8 @@ function splayUp(tree, x) {
   tree.reorder(x);
 }
 
-function findByOrder(tree, stat, value) {
-  var x = tree._root;
+function findByOrder(tree, key, value) {
+  var x = tree._root, fn = tree._stats[key];
   while (x !== null) {
     var L = x._L, R = x._R, V = x._V, leftval;
     if (L) {
@@ -126,7 +126,7 @@ function findByOrder(tree, stat, value) {
       }
       value -= leftval;
     }
-    leftval = key === 'n' ? 1 : V[key];
+    leftval = fn(V);
     if (value < leftval) {
       return x;
     }
@@ -146,7 +146,8 @@ var globalStub = new Location();
 // This is the simplified top-down splaying algorithm from: "Self-adjusting
 // Binary Search Trees" by Sleator and Tarjan.
 function splayByOrder(tree, key, value) {
-  var stub, left, right, temp, root, L, R, history, leftsum, rootval, found;
+  var stub, left, right, temp, root, L, R, history, leftsum, rootval, found,
+      fn = tree._stats[key];
   if (!tree._root) {
     return false;
   }
@@ -180,7 +181,7 @@ function splayByOrder(tree, key, value) {
       }
       value -= leftsum;
     }
-    rootval = key === 'n' ? 1 : root._V[key];
+    rootval = fn(root._V);
     if (value < rootval) {
       // Found the value at root, or ran off the left edge.
       found = true;
@@ -189,7 +190,7 @@ function splayByOrder(tree, key, value) {
     R = root._R;
     if (R !== null) {
       value -= rootval;
-      leftsum = key === 'n' ? 1 : R._V[key];
+      leftsum = fn(R._V);
       if (R._L !== null) {
         leftsum += R._L[key];
       }
@@ -277,16 +278,17 @@ function shortjson(n) {
 }
 
 function dumpnode(node, stats) {
-  var total = {}, cur = {}, str = '' + node._V, k, j;
+  var total = {}, cur = {}, str = '' + node._V, k, fn;
   if (stats) {
-    for (j = 0; j < stats.length; ++j) {
-      k = stats[j];
+    for (k in stats) {
+      fn = stats[k];
       total[k] = node[k];
-      cur[k] = node._V[k];
+      cur[k] = fn(node._V);
     }
     str += ' T' + shortjson(total) + ' ' + shortjson(cur);
+  } else {
+    str += ' (' + node.n + ')';
   }
-  str += ' (' + node.n + ')';
   return str;
 }
 
@@ -448,6 +450,11 @@ remove: function(location) {
     this.reorder(this._root);
   }
 },
+
+first: function() { return first(this); },
+
+next: successor,
+prev: predecessor,
 
 reorder: reorder,
 

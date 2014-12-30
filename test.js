@@ -15,27 +15,38 @@ for (j = 0; j < 7; ++j) {
 
 
 var n = 1e6;
+var start, end;
 
-var start = +(new Date);
+start = +(new Date);
+var x = new SplayTree({
+  n: function() { return 1; }
+//  length: function(v) { return v.length }
+});
+end = +(new Date);
+console.log('time: ' + (end - start) + 'ms for constructor');
 
-/*
-var y = [];
-for (var j = 0; j < n; ++j) {
-  y.unshift(j);
-  var k = Math.floor(Math.random() * y.length);
-  assert(y[k] == j - k);
-}
-*/
-
-var x = new SplayTree(['length']);
+start = +(new Date);
 for (var j = 0; j < n; ++j) {
   x.prepend('node' + j);
   var k = Math.floor(Math.random() * x.size());
   loc = x.nth(k);
   assert(loc._V == 'node' + (j - k));
 }
-
-var end = +(new Date);
+end = +(new Date);
 console.log('time: ' + (end - start) + 'ms for ' + n + ' appends and lookups');
+
+start = +(new Date);
+var total = 0;
+for (var loc = x.first(); loc !== null; loc = x.next(loc)) {
+  total += loc._V.length;
+}
+console.log('traverse total', total);
+end = +(new Date);
+console.log('time: ' + (end - start) + 'ms for ' + n + ' next()s');
+
+var total = x.stat('length');
+console.log('cached total', total);
+
+// x.dump();
 console.log('total length:', x.stat('length'));
 
