@@ -21,12 +21,30 @@ function reorder(x) {
   if (L !== null) v += L.n;
   if (R !== null) v += R.n;
   x.n = v;
-  for (var key in this._stats) if (key !== 'n') {
-    var fn = this._stats[key];
-    v = fn(V);
-    if (L !== null) v += L[key];
-    if (R !== null) v += R[key];
-    x[key] = v;
+  if (L !== null) {
+    if (R !== null) {
+      for (var key in this._stats) if (key !== 'n') {
+        var fn = this._stats[key];
+        x[key] = fn(V) + L[key] + R[key];
+      }
+    } else {
+      for (var key in this._stats) if (key !== 'n') {
+        var fn = this._stats[key];
+        x[key] = fn(V) + L[key];
+      }
+    }
+  } else {
+    if (R !== null) {
+      for (var key in this._stats) if (key !== 'n') {
+        var fn = this._stats[key];
+        x[key] = fn(V) + R[key];
+      }
+    } else {
+      for (var key in this._stats) if (key !== 'n') {
+        var fn = this._stats[key];
+        x[key] = fn(V);
+      }
+    }
   }
 }
 
