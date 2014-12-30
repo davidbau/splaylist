@@ -39,6 +39,7 @@ time(n + ' prepends and finds on total-length tree', function() {
     var k = Math.floor(Math.random() * total);
     loc = x.find('length', k);
   }
+  assert(9888890 == x.stat('length'));
 });
 
 time('start-to-end traversal on a ' + n + ' total-length tree', function() {
