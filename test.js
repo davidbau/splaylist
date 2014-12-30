@@ -18,7 +18,7 @@ time(n + ' prepends and nths on plain tree', function() {
     x.prepend('node' + j);
     var k = Math.floor(Math.random() * x.size());
     loc = x.nth(k);
-    assert(loc._V == 'node' + (j - k));
+    assert(loc.val() == 'node' + (j - k));
   }
 });
 
