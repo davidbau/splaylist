@@ -1,3 +1,24 @@
+// SplayList
+
+// Implements a linked list with logarithmic performance for
+// random-access array operations.
+//
+// var list = new SplayList();
+//
+// Use like an array without worrying about insertion cost.
+// list.push("last");
+// assert.equal(list.get(0), "last");
+// list.splice(0, 0, "inserted", "second");
+// assert.equal(list.get(0), "inserted");
+//
+// Use like a linked list without worrying about random-access cost.
+// var last = list.last();
+// var mid = list.prev(last);
+// assert.equal(mid.val(), "second")
+// list.removeAt(mid);
+// assert.equal(list.get(1), "last");
+// assert.equal(list.nth(1), last);
+
 var assert = require('assert');
 
 (function(exports) {
@@ -393,9 +414,21 @@ nth: function(index) {
   return this.find('n', index);
 },
 
-get: function(index) {
-  var location = this.nth(index);
-  if (location !== null) return location.val();
+get: function(loc) {
+  if (typeof(loc) === 'number') loc = this.nth(loc);
+  if (loc !== null) return loc.val();
+},
+
+set: function(loc, value) {
+  if (typeof(loc) === 'number') {
+    loc = this.nth(index);
+    if (loc === null) return;
+  } else {
+    if (loc === null) return;
+    splayUp(this, loc);
+  }
+  loc._V = value;
+  reorder(this, loc);
 },
 
 find: function(key, value) {
