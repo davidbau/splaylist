@@ -281,7 +281,7 @@ function dump(out, node, depth) {
   }
   var line = node.toString(),
       prev = node, scan = prev._P, j = depth, rchild, rparent;
-  if (scan == null) {
+  if (scan === null) {
     line = '\u2192' + line;
   } else {
     rchild = (scan._R === prev);
@@ -473,5 +473,5 @@ SplayTree.Location = Location;
 exports.SplayTree = SplayTree;
 
 })(
-  (typeof module) == 'object' && module.exports || window
+  (typeof module) === 'object' && module.exports || window
 );
