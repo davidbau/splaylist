@@ -19,6 +19,16 @@ Script tag usage
 
 <pre>
 var list = new SplayList();
+// See below....
+</pre>
+
+Node.js usage
+-------------
+
+<pre>
+var SplayList = require('splaylist').SplayList;
+
+var list = new SplayList();
 
 // Insertion is O(microseconds) when at a new spot
 // and O(nanoseconds) when repeated at the same spot.
