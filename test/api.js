@@ -59,7 +59,7 @@ assert.deepEqual(list.splice(2, 0, "Lemon", "Kiwi"),
   []);
 assert.deepEqual(list.toArray(),
   ["Banana", "Orange", "Lemon", "Kiwi", "Apple", "Mango"]);
-assert.deepEqual(list.splice(3, 2),
+assert.deepEqual(list.splice(list.nth(3), 2),
   ["Kiwi", "Apple"]);
 assert.deepEqual(list.toArray(1, 2),
   ["Orange", "Lemon"]);
@@ -74,7 +74,13 @@ assert.deepEqual(list.splice(null, 0, "Pear", "Peach", "Plum"),
 assert.deepEqual(list.toArray(),
   ["Banana", "Orange", "Pear", "Peach", "Plum"]);
 
-// TODO: add tests
 // Use removeRange to remove without copying.
-// Use splice, removeAt, removeRange with locations instead of integers.
-// Push, unshift multiple items.
+list.removeRange(1, 2);
+assert.deepEqual(list.toArray(),
+  ["Banana", "Peach", "Plum"]);
+list.removeRange(list.last(), 1);
+assert.deepEqual(list.toArray(),
+  ["Banana", "Peach"]);
+list.removeRange(list.first());
+assert.deepEqual(list.toArray(),
+  []);

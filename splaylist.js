@@ -534,43 +534,33 @@ removeRange: function(first, limit) {
   if (typeof(first) === 'number') {
     first = this.nth(first);
   }
-  if (typeof(limit) === 'number') {
-    first = this.nth(limit);
+  if (first == null) {
+    return;
   }
-  if (first === null) {
-    if (limit === null) {
-      this._root = null;
-    } else {
-      splayUp(this, limit);
-      //          limit               limit
-      //          /   \                   \
-      //       DELETE  R                   R
-      limit._L = null;
-      reorder(this, limit);
-    }
+  if (typeof(limit) === 'number') {
+    limit = forward(first, limit);
+  }
+  if (limit == null) {
+    splayUp(this, first);
+    //       first                   L
+    //       /  \
+    //      L   DELETE
+    this._root = first._L;
+    if (this._root !== null) this._root._P = null;
+    first._L = null;
   } else {
-    if (limit === null) {
-      splayUp(this, first);
-      //       first                   L
-      //       /  \
-      //      L   DELETE
-      this._root = first._L;
-      if (this._root !== null) this._root._P = null;
-      first._L = null;
-    } else {
-      splayUp(this, first);
-      splayUp(this, limit);
-      //          limit               limit
-      //          /   \               /   \
-      //       first   R             L     R
-      //       /  \
-      //      L   DELETE
-      limit._L = first._L;
-      if (first._L !== null) first._L._P = limit;
-      first._L = null;
-      first._P = null;
-      reorder(this, limit);
-    }
+    splayUp(this, first);
+    splayUp(this, limit);
+    //          limit               limit
+    //          /   \               /   \
+    //       first   R             L     R
+    //       /  \
+    //      L   DELETE
+    limit._L = first._L;
+    if (first._L !== null) first._L._P = limit;
+    first._L = null;
+    first._P = null;
+    reorder(this, limit);
   }
 },
 
