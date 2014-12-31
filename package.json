@@ -1,0 +1,24 @@
+{
+  "name": "splaylist",
+  "version": "0.0.0",
+  "description": "Fast splay tree with order statistics. As fast as a linked list for insertion, deletion, and traversal, but much faster than a list for indexed access and running counts.",
+  "main": "splaylist.js",
+  "keywords": [
+    "random",
+    "seed",
+    "crypto"
+  ],
+  "scripts": {
+    "test": "node test/test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/davidbau/splaylist.git"
+  },
+  "author": "David Bau",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidbau/splaylist/issues"
+  },
+  "homepage": "https://github.com/davidbau/splaylist"
+}

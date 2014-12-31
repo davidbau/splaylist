@@ -1,3 +1,5 @@
+var assert = require('assert');
+
 (function(exports) {
 
 var Location = function(value) {
@@ -359,6 +361,11 @@ nth: function(index) {
   return this.find('n', index);
 },
 
+get: function(index) {
+  var location = this.nth(index);
+  if (location !== null) return location.val();
+},
+
 find: function(key, value) {
   /*
   if (null !== (loc = findByOrder(this, key, value))) splayUp(this, loc);
@@ -371,7 +378,7 @@ find: function(key, value) {
 index: function(location) {
   splayUp(this, location);
   if (location._L === null) return 0;
-  return location._L.count;
+  return location._L.n;
 },
 
 stat: function(key, location) {
@@ -384,7 +391,7 @@ stat: function(key, location) {
   return left[key];
 },
 
-prepend: function(value) {
+unshift: function(value) {
   var root = new Location(value);
   root._R = this._root;
   if (root._R !== null) root._R._P = root;
@@ -393,7 +400,7 @@ prepend: function(value) {
   return root;
 },
 
-append: function(value) {
+push: function(value) {
   var root = new Location(value);
   root._L = this._root;
   if (root._L !== null) root._L._P = root;
@@ -402,7 +409,20 @@ append: function(value) {
   return root;
 },
 
+shift: function() {
+  var first = this.first();
+  this.remove(first);
+  return first.val();
+},
+
+pop: function() {
+  var last = this.last();
+  this.remove(last);
+  return last.val();
+},
+
 insertAfter: function(location, value) {
+  if (location === null) { return this.unshift(value); }
   splayUp(this, location);
   var oldroot = this._root;
   var root = new Location(value);
@@ -420,6 +440,7 @@ insertAfter: function(location, value) {
 },
 
 insertBefore: function(location, value) {
+  if (location === null) { return this.push(value); }
   splayUp(this, location);
   var oldroot = this._root;
   var root = new Location(value);
@@ -439,15 +460,63 @@ insertBefore: function(location, value) {
 remove: function(location) {
   splayUp(this, location);
   if (location._R === null) {
-    // assert: this._root === location
+    // assert.equal(this._root, location);
     this._root = location._L;
+    this._root._P = null;
+  } else if (location._L === null) {
+    this._root = location._R;
+    this._root._P = null;
   } else {
-    splayUp(successor(this._root));
-    // asssert: this._root._L === location
-    // asseert: location._R === null
+    splayUp(this, successor(this._root));
+    // assert.equal(this._root._L, location);
+    // assert.equal(location._R, null);
+    //         sucessor           successor
+    //          /   \               /   \
+    //       DELETE  R             L     R
+    //       /
+    //      L
     this._root._L = location._L
+    location._L = location._P = null;
     if (this._root._L) this._root._L._P = this._root._L;
     reorder(this, this._root);
+  }
+},
+
+removeRange: function(first, limit) {
+  if (first == null) {
+    if (limit == null) {
+      this._root = null;
+    } else {
+      splayUp(limit);
+      //          limit               limit
+      //          /   \                   \
+      //       DELETE  R                   R
+      limit._L = null;
+      reorder(this, limit);
+    }
+  } else {
+    if (limit == null) {
+      splayUp(first);
+      //       first                   L
+      //       /  \
+      //      L   DELETE
+      this._root = first._L;
+      this._root._P = null;
+      first._L = null;
+    } else {
+      splayUp(first);
+      splayUp(limit);
+      //          limit               limit
+      //          /   \               /   \
+      //       first   R             L     R
+      //       /  \
+      //      L   DELETE
+      limit._L = first._L;
+      first._L._P = limit;
+      first._L = null;
+      first._P = null;
+      reorder(this, limit);
+    }
   }
 },
 

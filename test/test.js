@@ -1,3 +1,6 @@
+// Run simple tests first.
+require('./simple');
+
 var SplayList = require('../splaylist').SplayList,
     assert = require('assert');
 
@@ -12,10 +15,10 @@ function time(text, fn) {
 
 var x;
 
-time(n + ' prepends and nths on plain tree', function() {
+time(n + ' unshifts and nths on plain tree', function() {
   x = new SplayList();
   for (var j = 0; j < n; ++j) {
-    x.prepend('node' + j);
+    x.unshift('node' + j);
     var k = Math.floor(Math.random() * x.size());
     loc = x.nth(k);
     assert(loc.val() == 'node' + (j - k));
@@ -29,7 +32,7 @@ time('start-to-end traversal on a ' + n + ' plain tree', function() {
   }
 });
 
-time(n + ' prepends and finds on total-length tree', function() {
+time(n + ' unshifts and finds on total-length tree', function() {
   x = new SplayList(function(V, X, L, R) {
     var n = 1, len = V.length;
     if (L !== null) { n += L.n; len += L.length; }
@@ -40,7 +43,7 @@ time(n + ' prepends and finds on total-length tree', function() {
   for (var j = 0; j < n; ++j) {
     var s = 'node' + j;
     total += s.length;
-    x.prepend(s);
+    x.unshift(s);
     var k = Math.floor(Math.random() * total);
     loc = x.find('length', k);
   }
@@ -59,7 +62,7 @@ for (var j = 0; j < n; ++j) {
   objs.push({ k: j % 97, s: "node" + j });
 }
 
-time(n + ' prepends and finds on an object tree', function() {
+time(n + ' unshifts and finds on an object tree', function() {
   x = new SplayList(function(V, X, L, R) {
     var n = 1, k = V.k, m = V.s.length;
     if (L !== null) { n += L.n; k += L.k; m += L.m; }
@@ -69,7 +72,7 @@ time(n + ' prepends and finds on an object tree', function() {
   var total = 0;
   for (var j = 0; j < n; ++j) {
     total += objs[j].k;
-    x.prepend(objs[j]);
+    x.unshift(objs[j]);
     var k = Math.floor(Math.random() * total);
     loc = x.find('k', k);
   }
