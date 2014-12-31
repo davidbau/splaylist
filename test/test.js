@@ -1,5 +1,6 @@
 // Run simple tests first.
-require('./simple');
+require('./api');
+require('./shape');
 
 var SplayList = require('../splaylist').SplayList,
     assert = require('assert');
