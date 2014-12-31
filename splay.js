@@ -172,7 +172,7 @@ var globalStub = new Location();
 // Binary Search Trees" by Sleator and Tarjan.
 function splayByOrder(tree, key, value) {
   var stub, left, right, temp, root, L, R, history, rootsum, found,
-      rightsum, rrsum;
+      sidesum, sssum;
   if (!tree._root) {
     return false;
   }
@@ -185,14 +185,19 @@ function splayByOrder(tree, key, value) {
   //       /bleeding_edge/src/splay-tree-inl.h
   stub = left = right = globalStub;
   root = tree._root;
+  rootsum = root[key];
   while (true) {
     L = root._L;
     if (L !== null) {
-      if (value < L[key]) {
-        if (L._L !== null && value < L._L[key]) {
+      sidesum = L[key];
+      if (value < sidesum) {
+        if (L._L !== null && value < (sssum = L._L[key])) {
           rightRootedRotate(root);
           tree.reorder(root);
           root = L;
+          rootsum = sssum;
+        } else {
+          rootsum = sidesum;
         }
         // link left
         right._L = root;
@@ -206,15 +211,17 @@ function splayByOrder(tree, key, value) {
     R = root._R;
     rootsum = root[key];
     if (R !== null) {
-      rightsum = R[key];
-      if (value >= rootsum - rightsum) {
-        if (R._R !== null && value >= rootsum - (rrsum = R._R[key])) {
+      sidesum = R[key];
+      if (value >= rootsum - sidesum) {
+        if (R._R !== null && value >= rootsum - (sssum = R._R[key])) {
           leftRootedRotate(root);
           tree.reorder(root);
           root = R;
-          value = value - rootsum + rrsum;
+          value = value - rootsum + sssum;
+          rootsum = sssum;
         } else {
-          value = value - rootsum + rightsum;
+          value = value - rootsum + sidesum;
+          rootsum = sidesum;
         }
         // link right
         left._R = root;
