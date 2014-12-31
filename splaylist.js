@@ -108,7 +108,7 @@ function splayUp(tree, x) {
 }
 
 function findByOrder(tree, key, value) {
-  var x = tree._root, fn = tree._stats[key];
+  var x = tree._root;
   while (x !== null) {
     var L = x._L, R = x._R, leftval, rightval;
     if (L !== null) {
@@ -233,6 +233,24 @@ function splayByOrder(tree, key, value) {
   return found;
 }
 
+function first(tree) {
+  var seek = tree._root, prev = null;
+  while (seek !== null) {
+    prev = seek;
+    seek = prev._L;
+  }
+  return prev
+}
+
+function last(tree) {
+  var seek = tree._root, prev = null;
+  while (seek !== null) {
+    prev = seek;
+    seek = prev._R;
+  }
+  return prev
+}
+
 function successor(loc) {
   var next = loc._R;
   if (next !== null) {
@@ -245,15 +263,6 @@ function successor(loc) {
     }
   }
   return next;
-}
-
-function first(tree) {
-  var seek = tree._root, prev = null;
-  while (seek !== null) {
-    prev = seek;
-    seek = prev._L;
-  }
-  return prev
 }
 
 function predecessor(loc) {
@@ -313,19 +322,19 @@ function dump(out, node, depth) {
   }
 }
 
-var SplayTree = function(orderstats) {
+var SplayList = function(orderstats) {
   this._root = null;
   if (orderstats) {
     this.orderstats = orderstats;
   }
 };
 
-SplayTree.prototype = {
+SplayList.prototype = {
 
 orderstats: function(V, X, L, R) {
   // Override orderstats to add more order statistics.
   // Example:
-  // x = new SplayTree();
+  // x = new SplayList();
   // x.orderstats = function(V, X, L, R) {
   //   var n = 1, len = V.length;
   //   if (L !== null) { n += L.n; len += L.length; }
@@ -352,9 +361,7 @@ nth: function(index) {
 
 find: function(key, value) {
   /*
-  var loc = findByOrder(this, key, value);
-  if (loc === null) return null;
-  splayUp(this, loc);
+  if (null !== (loc = findByOrder(this, key, value))) splayUp(this, loc);
   return loc;
   */
   if (!splayByOrder(this, key, value)) return null;
@@ -446,6 +453,8 @@ remove: function(location) {
 
 first: function() { return first(this); },
 
+last: function() { return last(this); },
+
 next: successor,
 
 prev: predecessor,
@@ -469,8 +478,8 @@ toString: function(out) {
 
 };
 
-SplayTree.Location = Location;
-exports.SplayTree = SplayTree;
+SplayList.Location = Location;
+exports.SplayList = SplayList;
 
 })(
   (typeof module) === 'object' && module.exports || window

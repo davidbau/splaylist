@@ -1,4 +1,4 @@
-var SplayTree = require('./splay').SplayTree,
+var SplayList = require('../splaylist').SplayList,
     assert = require('assert');
 
 var n = 1e6;
@@ -13,7 +13,7 @@ function time(text, fn) {
 var x;
 
 time(n + ' prepends and nths on plain tree', function() {
-  x = new SplayTree();
+  x = new SplayList();
   for (var j = 0; j < n; ++j) {
     x.prepend('node' + j);
     var k = Math.floor(Math.random() * x.size());
@@ -30,7 +30,7 @@ time('start-to-end traversal on a ' + n + ' plain tree', function() {
 });
 
 time(n + ' prepends and finds on total-length tree', function() {
-  x = new SplayTree(function(V, X, L, R) {
+  x = new SplayList(function(V, X, L, R) {
     var n = 1, len = V.length;
     if (L !== null) { n += L.n; len += L.length; }
     if (R !== null) { n += R.n; len += R.length; }
@@ -60,7 +60,7 @@ for (var j = 0; j < n; ++j) {
 }
 
 time(n + ' prepends and finds on an object tree', function() {
-  x = new SplayTree(function(V, X, L, R) {
+  x = new SplayList(function(V, X, L, R) {
     var n = 1, k = V.k, m = V.s.length;
     if (L !== null) { n += L.n; k += L.k; m += L.m; }
     if (R !== null) { n += R.n; k += R.k; m += R.m; }
