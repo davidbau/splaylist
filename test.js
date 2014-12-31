@@ -56,12 +56,12 @@ time('start-to-end traversal on a ' + n + ' total-length tree', function() {
 
 var objs = [];
 for (var j = 0; j < n; ++j) {
-  objs.push({ k: j % 97, m: j % 101 });
+  objs.push({ k: j % 97, s: "node" + j });
 }
 
 time(n + ' prepends and finds on an object tree', function() {
   x = new SplayTree(function(V, X, L, R) {
-    var n = 1, k = V.k, m = V.m;
+    var n = 1, k = V.k, m = V.s.length;
     if (L !== null) { n += L.n; k += L.k; m += L.m; }
     if (R !== null) { n += R.n; k += R.k; m += R.m; }
     X.n = n; X.k = k; X.m = m;
