@@ -1,50 +1,18 @@
 (function(exports) {
 
-var Location = function() {
+var Location = function(value) {
   this._P = null;
   this._L = null;
   this._R = null;
+  this._V = value;
 };
 
 Location.prototype = {
   val: function() { return this._V; }
 };
 
-function newloc(value, orderstats) {
-  var loc = new Location();
-  loc._V = value;
-  loc._S = orderstats ? orderstats(value) : null;
-  return loc;
-}
-
-function reorder(x) {
-  var L = x._L, R = x._R, S = x._S, v = 1;
-  if (L !== null) v += L.n;
-  if (R !== null) v += R.n;
-  x.n = v;
-  if (S !== null) {
-    if (L !== null) {
-      if (R !== null) {
-        for (key in S) {
-          x[key] = S[key] + L[key] + R[key];
-        }
-      } else {
-        for (key in S) {
-          x[key] = S[key] + L[key];
-        }
-      }
-    } else {
-      if (R !== null) {
-        for (key in S) {
-          x[key] = S[key] + R[key];
-        }
-      } else {
-        for (key in S) {
-          x[key] = S[key];
-        }
-      }
-    }
-  }
+function reorder(tree, X) {
+  tree.orderstats(X._V, X, X._L, X._R);
 }
 
 function leftRootedRotate(x) {
@@ -126,11 +94,11 @@ function splayUp(tree, x) {
         leftRotate(tree, p);
         rightRotate(tree, g);
       }
-      reorder(g);
+      reorder(tree, g);
     }
-    reorder(p);
+    reorder(tree, p);
   }
-  reorder(x);
+  reorder(tree, x);
 }
 
 function findByOrder(tree, key, value) {
@@ -189,7 +157,7 @@ function splayByOrder(tree, key, value) {
       if (value < sidesum) {
         if (L._L !== null && value < (sssum = L._L[key])) {
           rightRootedRotate(root);
-          tree.reorder(root);
+          reorder(tree, root);
           root = L;
           rootsum = sssum;
         } else {
@@ -211,7 +179,7 @@ function splayByOrder(tree, key, value) {
       if (value >= rootsum - sidesum) {
         if (R._R !== null && value >= rootsum - (sssum = R._R[key])) {
           leftRootedRotate(root);
-          tree.reorder(root);
+          reorder(tree, root);
           root = R;
           value = value - rootsum + sssum;
           rootsum = sssum;
@@ -247,14 +215,14 @@ function splayByOrder(tree, key, value) {
   if (root._R !== null) root._R._P = root;
   // propagate new order statistics
   if (right !== stub) while (right !== null) {
-    tree.reorder(right);
+    reorder(tree, right);
     right = right._P;
   }
   if (left !== stub) while (left !== null) {
-    tree.reorder(left);
+    reorder(tree, left);
     left = left._P;
   }
-  tree.reorder(root);
+  reorder(tree, root);
   tree._root = root;
   return found;
 }
@@ -359,11 +327,29 @@ function dump(out, node, depth) {
 var globalOne = { n: 1 };
 
 var SplayTree = function(orderstats) {
-  this._orderstats = orderstats;
+  if (orderstats) {
+    this.orderstats = orderstats;
+  }
   this._root = null;
 };
 
 SplayTree.prototype = {
+
+orderstats: function(V, X, L, R) {
+  // Override orderstats to add more order statistics.
+  // Example:
+  // x = new SplayTree();
+  // x.orderstats = function(V, X, L, R) {
+  //   var n = 1, len = V.length;
+  //   if (L !== null) { n += L.n; len += L.length; }
+  //   if (R !== null) { n += R.n; len += R.length; }
+  //   X.n = n; X.length = len;
+  // });
+  var v = 1;
+  if (L !== null) v += L.n;
+  if (R !== null) v += R.n;
+  X.n = v;
+},
 
 each: function(fn) {
   var loc = first(this);
@@ -405,19 +391,19 @@ stat: function(key, location) {
 },
 
 prepend: function(value) {
-  var root = newloc(value, this._orderstats);
+  var root = new Location(value);
   root._R = this._root;
   if (root._R !== null) root._R._P = root;
-  reorder(root);
+  reorder(this, root);
   this._root = root;
   return root;
 },
 
 append: function(value) {
-  var root = newloc(value, this._orderstats);
+  var root = new Location(value);
   root._L = this._root;
   if (root._L !== null) root._L._P = root;
-  reorder(root);
+  reorder(this, root);
   this._root = root;
   return root;
 },
@@ -425,16 +411,16 @@ append: function(value) {
 insertAfter: function(location, value) {
   splayUp(this, location);
   var oldroot = this._root;
-  var root = newloc(value, this._orderstats);
+  var root = new Location(value);
   root._L = oldroot;
   if (oldroot !== null) {
     oldroot._P = root;
     root._R = oldroot._R;
     if (root._R) root._R.P = root;
     oldroot._R = null;
-    reorder(oldroot);
+    reorder(this, oldroot);
   }
-  reorder(root);
+  reorder(this, root);
   this._root = root;
   return root;
 },
@@ -442,16 +428,16 @@ insertAfter: function(location, value) {
 insertBefore: function(location, value) {
   splayUp(this, location);
   var oldroot = this._root;
-  var root = newloc(value, this._orderstats);
+  var root = new Location(value);
   root._R = oldroot;
   if (oldroot !== null) {
     oldroot._P = root;
     root._L = oldroot._L;
     if (root._L) root._L.P = root;
     oldroot._L = null;
-    reorder(oldroot);
+    reorder(this, oldroot);
   }
-  reorder(root);
+  reorder(this, root);
   this._root = root;
   return root;
 },
@@ -467,7 +453,7 @@ remove: function(location) {
     // asseert: location._R === null
     this._root._L = location._L
     if (this._root._L) this._root._L._P = this._root._L;
-    reorder(this._root);
+    reorder(this, this._root);
   }
 },
 

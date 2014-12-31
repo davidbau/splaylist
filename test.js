@@ -30,7 +30,12 @@ time('start-to-end traversal on a ' + n + ' plain tree', function() {
 });
 
 time(n + ' prepends and finds on total-length tree', function() {
-  x = new SplayTree(function(s) { return {length: s.length}; });
+  x = new SplayTree(function(V, X, L, R) {
+    var n = 1, len = V.length;
+    if (L !== null) { n += L.n; len += L.length; }
+    if (R !== null) { n += R.n; len += R.length; }
+    X.n = n; X.length = len;
+  });
   var total = 0;
   for (var j = 0; j < n; ++j) {
     var s = 'node' + j;
