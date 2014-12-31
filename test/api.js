@@ -35,9 +35,38 @@ for (var it = list.first(); it !== null; it = list.next(it)) {
 }
 
 // Removal is O(microseconds).
-list.remove(loc1);
+assert.equal(list.length, 4);
+list.removeAt(loc1);
+assert.equal(list.length, 3);
 assert.equal(list.nth(2), loc3);
 assert.equal(list.pop(), 'after');
 assert.equal(list.shift(), 'unshifted');
-assert.equal(list.size(), 1);
+assert.equal(list.length, 1);
 assert.equal(list.get(0), 'before');
+
+// Use splice just like Array.splice.
+assert.deepEqual(list.splice(0, 1, "Banana", "Orange", "Apple", "Mango"),
+  ["before"]);
+assert.deepEqual(list.splice(2, 0, "Lemon", "Kiwi"),
+  []);
+assert.deepEqual(list.toArray(),
+  ["Banana", "Orange", "Lemon", "Kiwi", "Apple", "Mango"]);
+assert.deepEqual(list.splice(3, 2),
+  ["Kiwi", "Apple"]);
+assert.deepEqual(list.toArray(1, 2),
+  ["Orange", "Lemon"]);
+assert.deepEqual(list.toArray(),
+  ["Banana", "Orange", "Lemon", "Mango"]);
+assert.deepEqual(list.splice(2),
+  ["Lemon", "Mango"]);
+assert.deepEqual(list.toArray(),
+  ["Banana", "Orange"]);
+assert.deepEqual(list.splice(null, 0, "Pear", "Peach", "Plum"),
+  []);
+assert.deepEqual(list.toArray(),
+  ["Banana", "Orange", "Pear", "Peach", "Plum"]);
+
+// TODO: add tests
+// Use removeRange to remove without copying.
+// Use splice, removeAt, removeRange with locations instead of integers.
+

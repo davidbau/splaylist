@@ -267,6 +267,38 @@ function successor(loc) {
   return next;
 }
 
+function forward(loc, count, key) {
+  key = key || 'n';
+  var next = loc, R = next._R, rightsum;
+  if (R !== null) { rightsum = R[key]; }
+  while (count > 0) {
+    if (R !== null) {
+      next = R;
+      if (rightsum < count) {
+        count -= treesum;
+      } else {
+        for (loc = next._L; loc != null; loc = next._L) {
+          if (loc[key] < count) {
+            break;
+          }
+          next = loc;
+        }
+      }
+    } else {
+      for (loc = next, next = loc._P; next != null && next._R === loc;) {
+        loc = next;
+        next = loc._P;
+      }
+      if (next === null) break;
+      count += loc[key];
+    }
+    R = next._R;
+    if (R !== null) { count += (rightsum = next._R[key]); }
+    count -= next[key];
+  }
+  return next;
+}
+
 function predecessor(loc) {
   var prev = loc._L;
   if (prev !== null) {
@@ -411,14 +443,18 @@ push: function(value) {
 
 shift: function() {
   var first = this.first();
-  this.remove(first);
-  return first.val();
+  if (first !== null) {
+    this.removeAt(first);
+    return first.val();
+  }
 },
 
 pop: function() {
   var last = this.last();
-  this.remove(last);
-  return last.val();
+  if (last !== null) {
+    this.removeAt(last);
+    return last.val();
+  }
 },
 
 insertAfter: function(location, value) {
@@ -457,8 +493,12 @@ insertBefore: function(location, value) {
   return root;
 },
 
-remove: function(location) {
-  splayUp(this, location);
+removeAt: function(location) {
+  if (typeof(location) === 'number') {
+    location = this.nth(location);
+  } else {
+    splayUp(this, location);
+  }
   if (location._R === null) {
     // assert.equal(this._root, location);
     this._root = location._L;
@@ -483,11 +523,17 @@ remove: function(location) {
 },
 
 removeRange: function(first, limit) {
-  if (first == null) {
-    if (limit == null) {
+  if (typeof(first) === 'number') {
+    first = this.nth(first);
+  }
+  if (typeof(limit) === 'number') {
+    first = this.nth(limit);
+  }
+  if (first === null) {
+    if (limit === null) {
       this._root = null;
     } else {
-      splayUp(limit);
+      splayUp(this, limit);
       //          limit               limit
       //          /   \                   \
       //       DELETE  R                   R
@@ -495,29 +541,101 @@ removeRange: function(first, limit) {
       reorder(this, limit);
     }
   } else {
-    if (limit == null) {
-      splayUp(first);
+    if (limit === null) {
+      splayUp(this, first);
       //       first                   L
       //       /  \
       //      L   DELETE
       this._root = first._L;
-      this._root._P = null;
+      if (this._root !== null) this._root._P = null;
       first._L = null;
     } else {
-      splayUp(first);
-      splayUp(limit);
+      splayUp(this, first);
+      splayUp(this, limit);
       //          limit               limit
       //          /   \               /   \
       //       first   R             L     R
       //       /  \
       //      L   DELETE
       limit._L = first._L;
-      first._L._P = limit;
+      if (first._L !== null) first._L._P = limit;
       first._L = null;
       first._P = null;
       reorder(this, limit);
     }
   }
+},
+
+toArray: function(loc, count) {
+  var result = [];
+  if (count == null) count = Infinity;
+  if (!loc) loc = this.first();
+  if (typeof(loc) === 'number') {
+    loc = this.nth(loc);
+  }
+  while (result.length < count && loc !== null) {
+    result.push(loc.val());
+    loc = successor(loc);
+  }
+  return result;
+},
+
+splice: function(loc, count) {
+  var values = Array.prototype.splice.call(arguments, 2);
+  return this.spliceArray(loc, count, values);
+},
+
+spliceArray: function(loc, count, values) {
+  var after, left, j, len, loc, result = [], numeric;
+  if (count == null) count = Infinity;
+  numeric = typeof(count) === 'number';
+  if (loc === 0) loc = this.first();
+  if (typeof(loc) === 'number') {
+    loc = this.nth(loc);
+  }
+  if (loc !== null && (!numeric || count > 0)) {
+    after = loc;
+    while (after !== null) {
+      if (numeric ? result.length >= count : after == count) break;
+      result.push(after.val());
+      after = successor(after);
+    }
+    if (!numeric && after != count) {
+      result = [];
+      after = loc;
+      splayUp(this, after);
+    } else {
+      this.removeRange(loc, after);
+    }
+  } else {
+    after = loc;
+    if (after !== null) {
+      splayUp(this, after);
+    }
+  }
+  if (values.length === 0) return result;
+  // assert(after === null || after === this._root);
+  if (after === null) {
+    left = this._root;
+  } else {
+    left = after._L;
+    after._L = null;
+    reorder(this, after);
+  }
+  for (var j = values.length - 1; j >= 0; --j) {
+    loc = new Location(values[j]);
+    loc._R = after;
+    if (after !== null) after._P = loc;
+    if (j === 0) {
+      loc._L = left;
+      if (left !== null) left._P = loc;
+      loc._P = null;
+      this._root = loc;
+    }
+    reorder(this, loc);
+    after = loc;
+  }
+  return result;
 },
 
 first: function() { return first(this); },
@@ -528,7 +646,7 @@ next: successor,
 
 prev: predecessor,
 
-size: function() {
+get length() {
   if (this._root === null) return 0;
   return this._root.n;
 },

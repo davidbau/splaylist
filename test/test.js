@@ -20,7 +20,7 @@ time(n + ' unshifts and nths on plain tree', function() {
   x = new SplayList();
   for (var j = 0; j < n; ++j) {
     x.unshift('node' + j);
-    var k = Math.floor(Math.random() * x.size());
+    var k = Math.floor(Math.random() * x.length);
     loc = x.nth(k);
     assert(loc.val() == 'node' + (j - k));
   }
