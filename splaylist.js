@@ -424,21 +424,29 @@ stat: function(key, location) {
 },
 
 unshift: function(value) {
-  var root = new Location(value);
-  root._R = this._root;
-  if (root._R !== null) root._R._P = root;
-  reorder(this, root);
-  this._root = root;
-  return root;
+  if (arguments.length > 1) {
+    this.spliceArray(0, 0, arguments);
+  } else {
+    var root = new Location(value);
+    root._R = this._root;
+    if (root._R !== null) root._R._P = root;
+    reorder(this, root);
+    this._root = root;
+  }
+  return this.length;
 },
 
 push: function(value) {
-  var root = new Location(value);
-  root._L = this._root;
-  if (root._L !== null) root._L._P = root;
-  reorder(this, root);
-  this._root = root;
-  return root;
+  if (arguments.length > 1) {
+    this.spliceArray(null, 0, arguments);
+  } else {
+    var root = new Location(value);
+    root._L = this._root;
+    if (root._L !== null) root._L._P = root;
+    reorder(this, root);
+    this._root = root;
+  }
+  return this.length;
 },
 
 shift: function() {

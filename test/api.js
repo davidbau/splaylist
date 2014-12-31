@@ -3,12 +3,20 @@ var SplayList = require('../splaylist').SplayList,
 
 var list = new SplayList();
 
-// Insertion is O(microseconds) when at a new spot
-// and O(nanoseconds) when repeated at the same spot.
-var loc1 = list.push("first");
+// Use as a push/pop stack is O(nanoseconds).
+assert.equal(list.push("first", "second"), 2);
+assert.equal(list.pop(), "second");
+var loc1 = list.last();
+
+// Use with shift/unshift is also fast.
+assert.equal(list.unshift("also", "unshifted"), 3);
+assert.equal(list.shift(), "also");
+var loc4 = list.first();
+assert.equal(list.length, 2);
+
+// Insertion is O(microseconds) when at a new spot.
 var loc2 = list.insertBefore(loc1, "before");
 var loc3 = list.insertAfter(loc1, "after");
-var loc4 = list.unshift("unshifted");
 
 // Fast access by index, O(microseconds).
 assert.equal(list.nth(0), loc4);
@@ -22,7 +30,7 @@ assert.equal(list.index(loc2), 1);
 assert.equal(list.index(loc3), 3);
 assert.equal(list.index(loc4), 0);
 
-// Values are dereferenced using val(), O(nanoseconds).
+// Values are dereferenced using val(), instant.
 assert.equal(loc1.val(), 'first');
 assert.equal(loc2.val(), 'before');
 assert.equal(loc3.val(), 'after');
@@ -69,4 +77,4 @@ assert.deepEqual(list.toArray(),
 // TODO: add tests
 // Use removeRange to remove without copying.
 // Use splice, removeAt, removeRange with locations instead of integers.
-
+// Push, unshift multiple items.
