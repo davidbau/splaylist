@@ -1,6 +1,5 @@
-seedrandom.js
+splaylist.js
 =============
-[![NPM version](https://badge.fury.io/js/seedrandom.svg)](http://badge.fury.io/js/seedrandom)
 
 Splay list with order statistics for Javascript.
 
