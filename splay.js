@@ -58,7 +58,7 @@ function leftRootedRotate(x) {
   var y = x._R;
   x._R = y._L;
   if (y._L !== null) y._L._P = x
-  y._P = x._P;
+  // y._P = x._P; - the caller should do this
   y._L = x;
   x._P = y;
   return y;
@@ -73,6 +73,7 @@ function leftRotate(tree, x) {
   if (p === null) tree._root = y;
   else if (x === p._L) p._L = y;
   else p._R = y;
+  y._P = p;
 }
 
 // Right rotation without fixing up parents of x; appropriate
@@ -86,7 +87,7 @@ function rightRootedRotate(x) {
   var y = x._L;
   x._L = y._R;
   if (y._R !== null) y._R._P = x
-  y._P = x._P;
+  // y._P = x._P; - the caller should do this.
   y._R = x
   x._P = y;
   return y;
@@ -101,6 +102,7 @@ function rightRotate(tree, x) {
   if (p === null) tree._root = y;
   else if (x === p._L) p._L = y;
   else p._R = y;
+  y._P = p;
 }
 
 // Splays the node x to the root.
@@ -138,20 +140,22 @@ function splayUp(tree, x) {
 function findByOrder(tree, key, value) {
   var x = tree._root, fn = tree._stats[key];
   while (x !== null) {
-    var L = x._L, R = x._R, V = x._V, leftval;
-    if (L) {
+    var L = x._L, R = x._R, leftval, rightval;
+    if (L !== null) {
       leftval = L[key];
       if (value < leftval) {
         x = L;
         continue;
       }
-      value -= leftval;
     }
-    leftval = fn(V);
-    if (value < leftval) {
+    rightval = x[key];
+    if (R !== null) {
+      rightval -= R[key];
+    }
+    if (value < rightval) {
       return x;
     }
-    value -= leftval;
+    value -= rightval;
     x = R;
   }
   return null;
@@ -167,8 +171,8 @@ var globalStub = new Location();
 // This is the simplified top-down splaying algorithm from: "Self-adjusting
 // Binary Search Trees" by Sleator and Tarjan.
 function splayByOrder(tree, key, value) {
-  var stub, left, right, temp, root, L, R, history, leftsum, rootval, found,
-      fn = tree._stats[key];
+  var stub, left, right, temp, root, L, R, history, rootsum, found,
+      rightsum, rrsum;
   if (!tree._root) {
     return false;
   }
@@ -184,8 +188,7 @@ function splayByOrder(tree, key, value) {
   while (true) {
     L = root._L;
     if (L !== null) {
-      leftsum = L[key];
-      if (value < leftsum) {
+      if (value < L[key]) {
         if (L._L !== null && value < L._L[key]) {
           rightRootedRotate(root);
           tree.reorder(root);
@@ -196,45 +199,41 @@ function splayByOrder(tree, key, value) {
         root._P = right;
         // right order statistics and right._L are invalid: don't update.
         right = root;
-        root = root._L;
-        root._P = null;
+        root = root._L; // Don't null root._P until the end.
         continue;
       }
-      value -= leftsum;
-    }
-    rootval = fn(root._V);
-    if (value < rootval) {
-      // Found the value at root, or ran off the left edge.
-      found = true;
-      break;
     }
     R = root._R;
+    rootsum = root[key];
     if (R !== null) {
-      value -= rootval;
-      leftsum = fn(R._V);
-      if (R._L !== null) {
-        leftsum += R._L[key];
+      rightsum = R[key];
+      if (value >= rootsum - rightsum) {
+        if (R._R !== null && value >= rootsum - (rrsum = R._R[key])) {
+          leftRootedRotate(root);
+          tree.reorder(root);
+          root = R;
+          value = value - rootsum + rrsum;
+        } else {
+          value = value - rootsum + rightsum;
+        }
+        // link right
+        left._R = root;
+        root._P = left;
+        // left order statistics and left._R are invalid: don't update.
+        left = root;
+        root = root._R; // Don't null root._P until the end.
+        continue;
+      } else {
+        found = true;
+        break;
       }
-      if (R._R !== null && value >= leftsum) {
-        leftRootedRotate(root);
-        tree.reorder(root);
-        root = R;
-        value -= leftsum;
-      }
-      // link right
-      left._R = root;
-      root._P = left;
-      // left order statistics and left._R are invalid: don't update.
-      left = root;
-      root = root._R;
-      root._P = null;
-      continue;
+    } else {
+      found = value < rootsum;
     }
-    // Ran off the right edge.
-    found = false;
     break;
   }
   // reassemble
+  root._P = null;
   left._R = root._L;
   if (left._R !== null) left._R._P = left;
   right._L = root._R;

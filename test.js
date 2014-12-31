@@ -49,4 +49,32 @@ time('start-to-end traversal on a ' + n + ' total-length tree', function() {
   }
 });
 
+time(n + ' prepends and finds on an object tree', function() {
+  x = new SplayTree({
+    k: function(s) { return s.k; },
+    m: function(s) { return s.m; }
+  });
+  x.reorder = function(x) {
+    var L = x._L, R = x._R, V = x._V;
+    x.k = x._V.k;
+    x.m = x._V.m;
+    if (x._L !== null) {
+      x.k += x._L.k;
+      x.m += x._L.m;
+    }
+    if (x._R !== null) {
+      x.k += x._R.k;
+      x.m += x._R.m;
+    }
+  }
+  var total = 0;
+  for (var j = 0; j < n; ++j) {
+    var s = { k: j , m: j*j };
+    total += j;
+    x.prepend(s);
+    var k = Math.floor(Math.random() * total);
+    loc = x.find('k', k);
+  }
+  assert(total == x.stat('k'), total, x.stat('k'));
+});
 
