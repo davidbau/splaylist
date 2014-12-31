@@ -8,7 +8,13 @@ var Location = function(value) {
 };
 
 Location.prototype = {
-  val: function() { return this._V; }
+  val: function() { return this._V; },
+  toString: function() {
+    var total = {}, k;
+    for (k in this) if (k.charAt(0) != '_') total[k] = this[k];
+    return this._V.toString() + ' ' +
+      JSON.stringify(total).replace(/"(\w+)":/g, "$1:").replace(/\s+/g, ' ');
+  }
 };
 
 function reorder(tree, X) {
@@ -264,33 +270,16 @@ function predecessor(loc) {
   return prev;
 }
 
-function shortjson(n) {
-  return JSON.stringify(n).replace(/"(\w+)":/g, "$1:");
-}
-
-function dumpnode(node) {
-  var total = {}, str = '' + node._V, k;
-  if (node._S) {
-    for (var k in node._S) {
-      total[k] = node[k];
-    }
-    str += ' ' + shortjson(node._S);
-    str += ' T' + shortjson(total);
-  }
-  return str;
-}
-
 function dump(out, node, depth) {
   if (!node) {
     out("null");
     return;
   }
-  depth = depth || 0;
   var result = "";
   if (node._R !== null) {
     result += dump(out, node._R, depth + 1);
   }
-  var line = dumpnode(node),
+  var line = node.toString(),
       prev = node, scan = prev._P, j = depth, rchild, rparent;
   if (scan == null) {
     line = '\u2192' + line;
@@ -324,13 +313,11 @@ function dump(out, node, depth) {
   }
 }
 
-var globalOne = { n: 1 };
-
 var SplayTree = function(orderstats) {
+  this._root = null;
   if (orderstats) {
     this.orderstats = orderstats;
   }
-  this._root = null;
 };
 
 SplayTree.prototype = {
@@ -457,8 +444,6 @@ remove: function(location) {
   }
 },
 
-reorder: reorder,
-
 first: function() { return first(this); },
 
 next: successor,
@@ -470,11 +455,16 @@ size: function() {
   return this._root.n;
 },
 
-dump: function(out) {
+toString: function(out) {
+  var result = null;
   if ('function' != typeof(out)) {
-    out = function(s) { console.log(s); }
+    result = [];
+    out = function(s) { result.push(s); result.push('\n'); }
   }
-  dump(out, this._root);
+  dump(out, this._root, 0);
+  if (result) {
+    return result.join('');
+  }
 }
 
 };
