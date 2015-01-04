@@ -334,6 +334,44 @@ function predecessor(loc) {
   return prev;
 }
 
+function removeRange(tree, first, limit) {
+  if (limit == null) {
+    splayUp(tree, first);
+    //       first                   L
+    //       /  \
+    //      L   DELETE
+    tree._root = first._L;
+    if (tree._root !== null) tree._root._P = null;
+    first._L = null;
+  } else {
+    splayUp(tree, first);
+    splayUp(tree, limit);
+    if (limit._L !== first) {
+      // first does not come before limit in the tree.
+      if (limit._L === null || limit._L._L !== first) return;
+    }
+    // Or first is two levels down due to a zig-zig.
+    //          limit                 limit
+    //          /   \                 /   \
+    //        XX     R     ->        LL    R
+    //       /  \
+    //    first  YY
+    //    /   \
+    //   LL   ZZ
+    // Single-level down case.
+    //          limit               limit
+    //          /   \               /   \
+    //       first   R             L     R
+    //       /  \
+    //      L   DELETE
+    limit._L._P = null;
+    limit._L = first._L;
+    if (limit._L !== null) limit._L._P = limit;
+    first._L = null;
+    reorder(tree, limit);
+  }
+}
+
 function dump(out, node, depth) {
   if (!node) {
     out("null");
@@ -568,33 +606,70 @@ removeRange: function(first, limit) {
     first = this.nth(first);
   }
   if (first == null) {
-    return;
-  }
-  if (typeof(limit) === 'number') {
-    limit = forward(first, limit);
-  }
-  if (limit == null) {
-    splayUp(this, first);
-    //       first                   L
-    //       /  \
-    //      L   DELETE
-    this._root = first._L;
-    if (this._root !== null) this._root._P = null;
-    first._L = null;
+    limit = null;
   } else {
-    splayUp(this, first);
-    splayUp(this, limit);
-    //          limit               limit
-    //          /   \               /   \
-    //       first   R             L     R
-    //       /  \
-    //      L   DELETE
-    limit._L = first._L;
-    if (first._L !== null) first._L._P = limit;
-    first._L = null;
-    first._P = null;
-    reorder(this, limit);
+    if (typeof(limit) === 'number') {
+      limit = forward(first, limit);
+    }
+    removeRange(this, first, limit);
   }
+},
+
+spliceList: function(first, limit, insert) {
+  var result = new SplayList(), root, last;
+  if (typeof(first) === 'number') {
+    first = this.nth(first);
+  }
+  if (first == null) {
+    limit = null;
+  } else {
+    if (typeof(limit) === 'number') {
+      limit = forward(first, limit);
+    }
+    removeRange(this, first, limit);
+    // Assemble spliced out return result.
+    if (first._P !== null) {
+      // One-level-down case.
+      result._root = first._P;
+    } else {
+      // At-root case.
+      result._root = first;
+    }
+    reorder(result, first);
+    if (first._P !== null) {
+      reorder(result, result._root);
+    }
+  }
+  if (insert != null && insert._root !== null) {
+    if (limit !== null) {
+      //    (this)      (insert)          (this)    (insert)
+      //    limit         last              L         last
+      //    /   \    +    /      ->              +    /  \
+      //   L     R       T                           T    limit
+      //                                                    \
+      //                                                     R
+      splayUp(insert, (last = insert.last()));
+      last._R = limit;
+      limit._P = last;
+      this._root = limit._L;
+      limit._L = null;
+      // leave root._P invalid for now, because it will be overwritten.
+      reorder(insert, limit);
+      reorder(insert, last);
+      limit._R = null;
+    }
+    //  (this)}      (insert)         (this)
+    //   L            root             root
+    //         +        \      ->      /  \
+    //                   T            L    T
+    splayUp(insert, (root = insert.first()));
+    root._L = this._root;
+    if (root._L !== null) root._L._P = root;
+    this._root = root;
+    reorder(this, root);
+    insert._root = null;
+  }
+  return result;
 },
 
 toArray: function(loc, count) {
@@ -636,7 +711,7 @@ spliceArray: function(loc, count, values) {
       after = loc;
       splayUp(this, after);
     } else {
-      this.removeRange(loc, after);
+      removeRange(this, loc, after);
     }
   } else {
     after = loc;

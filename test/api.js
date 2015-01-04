@@ -74,13 +74,30 @@ assert.deepEqual(list.splice(null, 0, "Pear", "Peach", "Plum"),
 assert.deepEqual(list.toArray(),
   ["Banana", "Orange", "Pear", "Peach", "Plum"]);
 
-// Use removeRange to remove without copying.
-list.removeRange(1, 2);
+// Use removeRange to remove without copying, or spliceList to cheaply get a
+// list back containing the removed list.
+assert.deepEqual(list.spliceList(1, 2).toArray(),
+  ["Orange", "Pear"]);
 assert.deepEqual(list.toArray(),
   ["Banana", "Peach", "Plum"]);
 list.removeRange(list.last(), 1);
 assert.deepEqual(list.toArray(),
   ["Banana", "Peach"]);
-list.removeRange(list.first());
+list.spliceList(list.first());
 assert.deepEqual(list.toArray(),
   []);
+var list2 = new SplayList();
+list2.push("Coconut", "Guava", "Papaya");
+list.spliceList(0, 0, list2);
+assert.equal(list2.length, 0);
+assert.deepEqual(list.toArray(), ["Coconut", "Guava", "Papaya"]);
+list2.push("Pineapple", "Cherry");
+var list3 = list.spliceList(list.first(), list.last(), list2);
+assert.deepEqual(list3.toArray(), ["Coconut", "Guava"]);
+assert.deepEqual(list.toArray(), ["Pineapple", "Cherry", "Papaya"]);
+assert.equal(list.spliceList(null, null, list3).length, 0);
+assert.deepEqual(list.toArray(),
+  ["Pineapple", "Cherry", "Papaya", "Coconut", "Guava"]);
+
+
+
