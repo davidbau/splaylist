@@ -15,26 +15,23 @@ var loc4 = list.first();
 assert.equal(list.length, 2);
 
 // Insertion is O(microseconds) when at a new spot.
-var loc2 = list.insertBefore(loc1, "before");
 var loc3 = list.insertAfter(loc1, "after");
+var loc2 = list.insertBefore(loc1, "before");
 
-// Fast access by index, O(microseconds).
-assert.equal(list.nth(0), loc4);
-assert.equal(list.nth(1), loc2);
-assert.equal(list.nth(2), loc1);
-assert.equal(list.nth(3), loc3);
-
-// Fast discovery of current index, O(microseconds).
-assert.equal(list.index(loc1), 2);
-assert.equal(list.index(loc2), 1);
-assert.equal(list.index(loc3), 3);
-assert.equal(list.index(loc4), 0);
-
-// Values are dereferenced using val(), instant.
+// Values at locations are dereferenced using val(), instant.
 assert.equal(loc1.val(), 'first');
 assert.equal(loc2.val(), 'before');
 assert.equal(loc3.val(), 'after');
 assert.equal(loc4.val(), 'unshifted');
+
+// Visualize the splay tree structure with toString().
+// (Most recent location is usually at the root.)
+assert.equal(list.toString(),
+  "   ┌╴after {n:1}\n" +
+  " ┌╴first {n:2}\n" +
+  "━before {n:4}\n" +
+  " └╴unshifted {n:1}\n"
+);
 
 // Traveral is O(nanoseconds) using first and next, or last and prev.
 var expect = [loc4, loc2, loc1, loc3];
@@ -43,6 +40,28 @@ for (var it = list.first(); it !== null; it = it.next()) {
 }
 assert.equal(list.last(), loc3);
 assert.equal(list.last().prev(), loc1);
+
+// Quickly find a location by index, O(microseconds).
+assert.equal(list.nth(0), loc4);
+assert.equal(list.nth(1), loc2);
+assert.equal(list.nth(2), loc1);
+assert.equal(list.nth(3), loc3);
+
+// Simple array-like access, O(microsectonds).
+assert.equal(list.get(0), 'unshifted');
+assert.equal(list.get(1), 'before');
+assert.equal(list.get(2), 'first');
+assert.equal(list.get(3), 'after');
+
+// Convert to an array with slice.
+assert.deepEqual(list.slice(), ['unshifted', 'before', 'first', 'after']);
+assert.deepEqual(list.slice(1,3), ['before', 'first']);
+
+// Quickly discover index of any location, O(microseconds).
+assert.equal(list.index(loc1), 2);
+assert.equal(list.index(loc2), 1);
+assert.equal(list.index(loc3), 3);
+assert.equal(list.index(loc4), 0);
 
 // Removal is O(microseconds).
 assert.equal(list.length, 4);
@@ -59,50 +78,50 @@ assert.deepEqual(list.splice(0, 1, "Banana", "Orange", "Apple", "Mango"),
   ["before"]);
 assert.deepEqual(list.splice(2, 0, "Lemon", "Kiwi"),
   []);
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   ["Banana", "Orange", "Lemon", "Kiwi", "Apple", "Mango"]);
 assert.deepEqual(list.splice(list.nth(3), 2),
   ["Kiwi", "Apple"]);
-assert.deepEqual(list.toArray(1, 2),
+assert.deepEqual(list.slice(1, 3),
   ["Orange", "Lemon"]);
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   ["Banana", "Orange", "Lemon", "Mango"]);
 assert.deepEqual(list.splice(2),
   ["Lemon", "Mango"]);
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   ["Banana", "Orange"]);
 assert.deepEqual(list.splice(null, 0, "Pear", "Peach", "Plum"),
   []);
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   ["Banana", "Orange", "Pear", "Peach", "Plum"]);
 
 // Use removeRange to remove without copying, or spliceList to cheaply get a
 // list back containing the removed list.
-assert.deepEqual(list.spliceList(1, 2).toArray(),
+assert.deepEqual(list.spliceList(1, 2).slice(),
   ["Orange", "Pear"]);
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   ["Banana", "Peach", "Plum"]);
-assert.deepEqual(list.spliceList(1, 0).toArray(),
+assert.deepEqual(list.spliceList(1, 0).slice(),
   []);
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   ["Banana", "Peach", "Plum"]);
 list.removeRange(list.last(), 1);
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   ["Banana", "Peach"]);
 list.spliceList(list.first());
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   []);
 var list2 = new SplayList();
 list2.push("Coconut", "Guava", "Papaya");
 list.spliceList(0, 0, list2);
 assert.equal(list2.length, 0);
-assert.deepEqual(list.toArray(), ["Coconut", "Guava", "Papaya"]);
+assert.deepEqual(list.slice(), ["Coconut", "Guava", "Papaya"]);
 list2.push("Pineapple", "Cherry");
 var list3 = list.spliceList(list.first(), list.last(), list2);
-assert.deepEqual(list3.toArray(), ["Coconut", "Guava"]);
-assert.deepEqual(list.toArray(), ["Pineapple", "Cherry", "Papaya"]);
+assert.deepEqual(list3.slice(), ["Coconut", "Guava"]);
+assert.deepEqual(list.slice(), ["Pineapple", "Cherry", "Papaya"]);
 assert.equal(list.spliceList(null, null, list3).length, 0);
-assert.deepEqual(list.toArray(),
+assert.deepEqual(list.slice(),
   ["Pineapple", "Cherry", "Papaya", "Coconut", "Guava"]);
 
 

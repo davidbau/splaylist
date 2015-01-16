@@ -23,7 +23,7 @@ function rand(n) {
 function array(a) {
   if (a instanceof Array) return a;
   if (!a) return [];
-  return a.toArray();
+  return a.slice();
 }
 
 time(n + ' unshifts and nths on plain tree', function() {
@@ -127,7 +127,7 @@ time(splicen + ' random splices on a plain tree', function() {
         (rand(2) ? rl.push : rl.unshift).apply(
           rl, curl.spliceArray(start, len, insa));
       }
-      // assert.deepEqual(ra, array(rl));
+      assert.deepEqual(ra, array(rl));
       assert.equal(ra.length, rl.length);
       index = rand(ra.length);
       assert.equal(ra[index], rl.get(index));

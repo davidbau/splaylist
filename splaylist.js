@@ -554,7 +554,7 @@ insertAfter: function(location, value) {
   if (oldroot !== null) {
     oldroot._P = root;
     root._R = oldroot._R;
-    if (root._R) root._R.P = root;
+    if (root._R) root._R._P = root;
     oldroot._R = null;
     reorder(this, oldroot);
   }
@@ -572,7 +572,7 @@ insertBefore: function(location, value) {
   if (oldroot !== null) {
     oldroot._P = root;
     root._L = oldroot._L;
-    if (root._L) root._L.P = root;
+    if (root._L) root._L._P = root;
     oldroot._L = null;
     reorder(this, oldroot);
   }
@@ -687,14 +687,16 @@ spliceList: function(first, limit, insert) {
   return result;
 },
 
-toArray: function(loc, count) {
+slice: function(loc, end) {
   var result = [];
-  if (count == null) count = Infinity;
   if (!loc) loc = this.first();
   if (typeof(loc) === 'number') {
     loc = this.nth(loc);
   }
-  while (result.length < count && loc !== null) {
+  if (typeof(end) === 'number') {
+    end = this.nth(end);
+  }
+  while (loc !== null && loc !== end) {
     result.push(loc.val());
     loc = loc.next();
   }

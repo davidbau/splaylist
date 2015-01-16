@@ -63,7 +63,7 @@ assert.equal(list.get(3), 'after');
 
 // Convert to an array with slice.
 assert.deepEqual(list.slice(), ['unshifted', 'before', 'first', 'after']);
-assert.deepEqual(list.slice(1,2), ['before', 'first']);
+assert.deepEqual(list.slice(1, 3), ['before', 'first']);
 
 // Quickly discover index of any location, O(microseconds).
 assert.equal(list.index(loc1), 2);
