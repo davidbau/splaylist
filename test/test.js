@@ -101,10 +101,12 @@ time(splicen + ' random splices on a plain tree', function() {
         curl = lists[lists.length - 1],
         choice = rand(4);
     if (choice == 2) {
+      console.log('push');
       var str = 'node' + j;
       cura.push(str);
       curl.push(str);
     } else if (choice == 3) {
+      console.log('unshift');
       var str = 'node' + j;
       cura.unshift(str);
       curl.unshift(str);
@@ -119,8 +121,11 @@ time(splicen + ' random splices on a plain tree', function() {
       args.push.apply(args, insa);
       ra = cura.splice.apply(cura, args);
       if (choice) {
+      console.log('splicelist');
         rl = curl.spliceList(start, len, insl);
       } else {
+      console.log('splicearray');
+        rl = curl.spliceList(start, len, insl);
         rl = curl.spliceArray(start, len, insa);
       }
       assert.deepEqual(ra, array(rl));
@@ -131,7 +136,12 @@ time(splicen + ' random splices on a plain tree', function() {
         lists.push(rl);
       }
     }
-    // assert.equal(cura.length, curl.length);
+    if (cura.length != curl.length) {
+      console.log(cura.length, cura);
+      console.log(curl.length);
+      console.log(curl.toString());
+    }
+    assert.equal(cura.length, curl.length);
     assert.deepEqual(cura, array(curl));
     var index = rand(cura.length);
     assert.equal(cura[0], curl.get(0));
