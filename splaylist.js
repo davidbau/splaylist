@@ -345,10 +345,11 @@ function removeRange(tree, first, limit) {
     first._L = null;
   } else {
     splayUp(tree, first);
+    if (limit === first) return false;
     splayUp(tree, limit);
     if (limit._L !== first) {
       // first does not come before limit in the tree.
-      if (limit._L === null || limit._L._L !== first) return;
+      if (limit._L === null || limit._L._L !== first) return false;
     }
     // Or first is two levels down due to a zig-zig.
     //          limit                 limit
@@ -370,6 +371,7 @@ function removeRange(tree, first, limit) {
     first._L = null;
     reorder(tree, limit);
   }
+  return true;
 }
 
 function dump(out, node, depth) {
@@ -626,18 +628,19 @@ spliceList: function(first, limit, insert) {
     if (typeof(limit) === 'number') {
       limit = forward(first, limit);
     }
-    removeRange(this, first, limit);
-    // Assemble spliced out return result.
-    if (first._P !== null) {
-      // One-level-down case.
-      result._root = first._P;
-    } else {
-      // At-root case.
-      result._root = first;
-    }
-    reorder(result, first);
-    if (first._P !== null) {
-      reorder(result, result._root);
+    if (removeRange(this, first, limit)) {
+      // Assemble spliced out return result.
+      if (first._P !== null) {
+        // One-level-down case.
+        result._root = first._P;
+      } else {
+        // At-root case.
+        result._root = first;
+      }
+      reorder(result, first);
+      if (first._P !== null) {
+        reorder(result, result._root);
+      }
     }
   }
   if (insert != null && insert._root !== null) {

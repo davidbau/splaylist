@@ -80,6 +80,10 @@ assert.deepEqual(list.spliceList(1, 2).toArray(),
   ["Orange", "Pear"]);
 assert.deepEqual(list.toArray(),
   ["Banana", "Peach", "Plum"]);
+assert.deepEqual(list.spliceList(1, 0).toArray(),
+  []);
+assert.deepEqual(list.toArray(),
+  ["Banana", "Peach", "Plum"]);
 list.removeRange(list.last(), 1);
 assert.deepEqual(list.toArray(),
   ["Banana", "Peach"]);
