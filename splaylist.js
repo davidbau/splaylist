@@ -13,7 +13,7 @@
 //
 // Use like a linked list without worrying about random-access cost.
 // var last = list.last();
-// var mid = list.prev(last);
+// var mid = last.prev();
 // assert.equal(mid.val(), "second")
 // list.removeAt(mid);
 // assert.equal(list.get(1), "last");
@@ -21,7 +21,7 @@
 
 var assert = require('assert');
 
-(function(exports) {
+(function(global, module, define) {
 
 var Location = function(value) {
   this._P = null;
@@ -127,7 +127,9 @@ function rightRotate(tree, x) {
 
 // Splays the node x to the root.
 function splayUp(tree, x) {
-  for (var p = x._P; p !== null; p = x._P) {
+  var p = x._P;
+  if (p === null) return;
+  do {
     var g = p._P;
     if (g === null) {
       // Zig right or left.
@@ -153,10 +155,13 @@ function splayUp(tree, x) {
       reorder(tree, g);
     }
     reorder(tree, p);
-  }
+    p = x._P;
+  } while (p !== null);
   reorder(tree, x);
 }
 
+// Binary search: find first node where sum of key up to and including
+// that node would exceed value.
 function findByOrder(tree, key, value) {
   var x = tree._root;
   while (x !== null) {
@@ -509,7 +514,7 @@ unshift: function(value) {
       this.spliceArray(0, 0, arguments);
     }
   } else {
-    var root = new Location(value);
+    var root = new (this.constructor.Location)(value);
     root._R = this._root;
     if (root._R !== null) root._R._P = root;
     reorder(this, root);
@@ -524,7 +529,7 @@ push: function(value) {
       this.spliceArray(null, 0, arguments);
     }
   } else {
-    var root = new Location(value);
+    var root = new (this.constructor.Location)(value);
     root._L = this._root;
     if (root._L !== null) root._L._P = root;
     reorder(this, root);
@@ -563,7 +568,7 @@ insertAfter: function(location, value) {
   } else {
     splayUp(this, location);
     var oldroot = this._root;
-    var root = new Location(value);
+    var root = new (this.constructor.Location)(value);
     root._L = oldroot;
     if (oldroot !== null) {
       oldroot._P = root;
@@ -594,7 +599,7 @@ insertBefore: function(location, value) {
   } else {
     splayUp(this, location);
     var oldroot = this._root;
-    var root = new Location(value);
+    var root = new (this.constructor.Location)(value);
     root._R = oldroot;
     if (oldroot !== null) {
       oldroot._P = root;
@@ -740,7 +745,8 @@ splice: function(loc, count) {
 },
 
 spliceArray: function(loc, count, values) {
-  var after, left, j, len, loc, result = [], numeric;
+  var after, left, j, len, loc, result = [], numeric,
+      Loc = this.constructor.Location;
   if (count == null) count = Infinity;
   numeric = typeof(count) === 'number';
   if (loc === 0) loc = this.first();
@@ -769,10 +775,10 @@ spliceArray: function(loc, count, values) {
   }
   if (values.length === 0) return result;
   j = values.length - 1;
-  loc = new Location(values[j]);
+  loc = new Loc(values[j]);
   while (--j >= 0) {
     sub = loc;
-    loc = new Location(values[j]);
+    loc = new Loc(values[j]);
     loc._R = sub;
     sub._P = loc;
     reorder(this, sub);
@@ -842,8 +848,25 @@ var extend = function(proto) {
 
 SplayList.extend = extend;
 SplayList.Location = Location;
-exports.SplayList = SplayList;
 
+//
+// Nodejs and AMD support: export the implementation as a module using
+// either convention.
+//
+if (module && module.exports) {
+  // node.js
+  module.exports = { SplayList: SplayList };
+} else if (define && define.amd) {
+  // AMD
+  define(function() { return { SplayList: SplayList}; });
+} else {
+  // plain script
+  global.SplayList = SplayList;
+}
+
+// End anonymous scope, and pass initial values.
 })(
-  (typeof module) === 'object' && module.exports || this
+  this,   // global window object
+  (typeof module) == 'object' && module,    // present in node.js
+  (typeof define) == 'function' && define   // present with an AMD loader
 );
