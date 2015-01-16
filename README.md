@@ -37,29 +37,39 @@ var loc2 = list.insertBefore(loc1, "before");
 var loc3 = list.insertAfter(loc1, "after");
 var loc4 = list.unshift("unshifted");
 
-// Fast access by index, O(microseconds).
-assert.equal(list.nth(0), loc4);
-assert.equal(list.nth(1), loc2);
-assert.equal(list.nth(2), loc1);
-assert.equal(list.nth(3), loc3);
-
-// Fast discovery of current index, O(microseconds).
-assert.equal(list.index(loc1), 2);
-assert.equal(list.index(loc2), 1);
-assert.equal(list.index(loc3), 3);
-assert.equal(list.index(loc4), 0);
-
 // Values are dereferenced using val(), O(nanoseconds).
 assert.equal(loc1.val(), 'first');
 assert.equal(loc2.val(), 'before');
 assert.equal(loc3.val(), 'after');
 assert.equal(loc4.val(), 'unshifted');
 
-// Traveral is O(nanoseconds) using first and next, or last and prev.
+// Traveral is O(nanoseconds) using first and next, last and prev.
 var expect = [loc4, loc2, loc1, loc3];
-for (var it = list.first(); it !== null; it = list.next(it)) {
+for (var it = list.first(); it !== null; it = it.next()) {
   assert.equal(expect.shift().val(), it.val());
 }
+
+// Quickly find a location by index, O(microseconds).
+assert.equal(list.nth(0), loc4);
+assert.equal(list.nth(1), loc2);
+assert.equal(list.nth(2), loc1);
+assert.equal(list.nth(3), loc3);
+
+// Simple array-like access, O(microsectonds).
+assert.equal(list.get(0), 'unshifted');
+assert.equal(list.get(1), 'before');
+assert.equal(list.get(2), 'first');
+assert.equal(list.get(3), 'after');
+
+// Convert to an array with slice.
+assert.deepEqual(list.slice(), ['unshifted', 'before', 'first', 'after']);
+assert.deepEqual(list.slice(1,2), ['before', 'first']);
+
+// Quickly discover index of any location, O(microseconds).
+assert.equal(list.index(loc1), 2);
+assert.equal(list.index(loc2), 1);
+assert.equal(list.index(loc3), 3);
+assert.equal(list.index(loc4), 0);
 
 // Removal is O(microseconds).
 list.remove(loc1);

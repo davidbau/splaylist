@@ -31,6 +31,7 @@ var Location = function(value) {
 };
 
 Location.prototype = {
+  constructor: Location,
   val: function() { return this._V; },
   next: function() {
     var loc = this, next = loc._R;
@@ -424,6 +425,8 @@ var SplayList = function(orderstats) {
 
 SplayList.prototype = {
 
+constructor: SplayList,
+
 orderstats: function(V, X, L, R) {
   // Override orderstats to add more order statistics.
   // Example:
@@ -485,8 +488,10 @@ index: function(location) {
 },
 
 stat: function(key, location) {
-  var left = this._root;
-  if (location != null) {
+  var left;
+  if (location == null) {
+    left = this._root;
+  } else {
     splayUp(this, location);
     left = location._L;
   }
@@ -786,6 +791,23 @@ toString: function(out) {
 
 };
 
+// Simplify subclassing, for example, for overriding orderstats.
+var extend = function(proto) {
+  var Baseclass = this,
+      Subclass = function() { return Baseclass.apply(this, arguments); },
+      k;
+  Subclass.prototype = Object.create(Baseclass.prototype);
+  for (k in proto) if (proto.hasOwnProperty(k)) {
+    Subclass.prototype[k] = proto[k];
+  }
+  Subclass.prototype.constructor = Subclass;
+  for (k in Baseclass) if (Baseclass.hasOwnProperty(k)) {
+    Subclass[k] = Baseclass[k];
+  }
+  return Subclass;
+};
+
+SplayList.extend = extend;
 SplayList.Location = Location;
 exports.SplayList = SplayList;
 
