@@ -26,28 +26,48 @@ Node.js usage
 -------------
 
 <pre>
-var SplayList = require('splaylist').SplayList;
+var SplayList = require('splaylist').SplayList,
+    assert = require('assert');
 
 var list = new SplayList();
 
-// Insertion is O(microseconds) when at a new spot
-// and O(nanoseconds) when repeated at the same spot.
-var loc1 = list.push("first");
-var loc2 = list.insertBefore(loc1, "before");
-var loc3 = list.insertAfter(loc1, "after");
-var loc4 = list.unshift("unshifted");
+// Use as a push/pop stack is O(nanoseconds).
+assert.equal(list.push("first", "second"), 2);
+assert.equal(list.pop(), "second");
+var loc1 = list.last();
 
-// Values are dereferenced using val(), O(nanoseconds).
+// Use with shift/unshift is also fast.
+assert.equal(list.unshift("also", "unshifted"), 3);
+assert.equal(list.shift(), "also");
+var loc4 = list.first();
+assert.equal(list.length, 2);
+
+// Insertion is O(microseconds) when at a new spot.
+var loc3 = list.insertAfter(loc1, "after");
+var loc2 = list.insertBefore(loc1, "before");
+
+// Values at locations are dereferenced using val(), instant.
 assert.equal(loc1.val(), 'first');
 assert.equal(loc2.val(), 'before');
 assert.equal(loc3.val(), 'after');
 assert.equal(loc4.val(), 'unshifted');
 
-// Traveral is O(nanoseconds) using first and next, last and prev.
+// Visualize the splay tree structure with toString().
+// (Most recent location is usually at the root.)
+assert.equal(list.toString(),
+  "   ┌╴after {n:1}\n" +
+  " ┌╴first {n:2}\n" +
+  "━before {n:4}\n" +
+  " └╴unshifted {n:1}\n"
+);
+
+// Traveral is O(nanoseconds) using first and next, or last and prev.
 var expect = [loc4, loc2, loc1, loc3];
 for (var it = list.first(); it !== null; it = it.next()) {
   assert.equal(expect.shift().val(), it.val());
 }
+assert.equal(list.last(), loc3);
+assert.equal(list.last().prev(), loc1);
 
 // Quickly find a location by index, O(microseconds).
 assert.equal(list.nth(0), loc4);
@@ -61,9 +81,9 @@ assert.equal(list.get(1), 'before');
 assert.equal(list.get(2), 'first');
 assert.equal(list.get(3), 'after');
 
-// Convert to an array with slice.
+// Copy to an array with slice.
 assert.deepEqual(list.slice(), ['unshifted', 'before', 'first', 'after']);
-assert.deepEqual(list.slice(1, 3), ['before', 'first']);
+assert.deepEqual(list.slice(1,3), ['before', 'first']);
 
 // Quickly discover index of any location, O(microseconds).
 assert.equal(list.index(loc1), 2);
@@ -72,13 +92,132 @@ assert.equal(list.index(loc3), 3);
 assert.equal(list.index(loc4), 0);
 
 // Removal is O(microseconds).
-list.remove(loc1);
+assert.equal(list.length, 4);
+list.removeAt(loc1);
+assert.equal(list.length, 3);
 assert.equal(list.nth(2), loc3);
 assert.equal(list.pop(), 'after');
 assert.equal(list.shift(), 'unshifted');
-assert.equal(list.size(), 1);
-assert.equal(list.first().val(), 'before');
+assert.equal(list.length, 1);
+assert.equal(list.get(0), 'before');
+
+// Use splice just like Array.splice.
+assert.deepEqual(list.splice(0, 1, "Banana", "Orange", "Apple", "Mango"),
+  ["before"]);
+assert.deepEqual(list.splice(2, 0, "Lemon", "Kiwi"),
+  []);
+assert.deepEqual(list.slice(),
+  ["Banana", "Orange", "Lemon", "Kiwi", "Apple", "Mango"]);
+assert.deepEqual(list.splice(list.nth(3), 2),
+  ["Kiwi", "Apple"]);
+assert.deepEqual(list.slice(1, 3),
+  ["Orange", "Lemon"]);
+assert.deepEqual(list.slice(),
+  ["Banana", "Orange", "Lemon", "Mango"]);
+assert.deepEqual(list.splice(2),
+  ["Lemon", "Mango"]);
+assert.deepEqual(list.slice(),
+  ["Banana", "Orange"]);
+assert.deepEqual(list.splice(null, 0, "Pear", "Peach", "Plum"),
+  []);
+assert.deepEqual(list.slice(),
+  ["Banana", "Orange", "Pear", "Peach", "Plum"]);
+
+// Use removeRange to remove without copying, or spliceList to cheaply get a
+// list back containing the removed list.
+assert.deepEqual(list.spliceList(1, 2).slice(),
+  ["Orange", "Pear"]);
+assert.deepEqual(list.slice(),
+  ["Banana", "Peach", "Plum"]);
+assert.deepEqual(list.spliceList(1, 0).slice(),
+  []);
+assert.deepEqual(list.slice(),
+  ["Banana", "Peach", "Plum"]);
+list.removeRange(list.last(), 1);
+assert.deepEqual(list.slice(),
+  ["Banana", "Peach"]);
+list.spliceList(list.first());
+assert.deepEqual(list.slice(),
+  []);
+var list2 = new SplayList();
+list2.push("Coconut", "Guava", "Papaya");
+list.spliceList(0, 0, list2);
+assert.equal(list2.length, 0);
+assert.deepEqual(list.slice(), ["Coconut", "Guava", "Papaya"]);
+list2.push("Pineapple", "Cherry");
+var list3 = list.spliceList(list.first(), list.last(), list2);
+assert.deepEqual(list3.slice(), ["Coconut", "Guava"]);
+assert.deepEqual(list.slice(), ["Pineapple", "Cherry", "Papaya"]);
+assert.equal(list.spliceList(null, null, list3).length, 0);
+assert.deepEqual(list.slice(),
+  ["Pineapple", "Cherry", "Papaya", "Coconut", "Guava"]);
+
+// insertBefore can accept multiple arguments.
+// it returns the location of the first one inserted, if any.
+var locb = list.insertBefore(list.first().next(), "Blueberry", "Raspberry");
+assert.equal(locb.val(), "Blueberry");
+assert.equal(locb.next().val(), "Raspberry");
+assert.equal(list.first().next(), locb);
+
+// insertBefore null is the same as push.
+var locp = list.insertBefore(null, "Watermelon");
+assert.equal(locp.val(), "Watermelon");
+assert.equal(locp, list.last());
+
+// insertAfter can accept multiple arguments.
+// It returns the location of the first one inserted, if any.
+var loca = list.insertAfter(list.last().prev(), "Pumpkin", "Squash");
+assert.equal(loca.val(), "Pumpkin");
+assert.equal(loca.next().val(), "Squash");
+assert.equal(list.last().prev(), loca.next());
+
+// insertAfter null is the same as unshift.
+var locp = list.insertAfter(null, "Almond");
+assert.equal(locp, list.first());
 </pre>
+
+Order Statistics
+----------------
+
+By default, the list tracks an "n" statistic: the number of locations
+before any given location.
+
+<pre>
+// Stat returns the total of a statistic to the left of a location.
+assert.equal(list.stat('n', loc), list.index(loc));
+// Find returns the leftmost location where the sum of the stat up
+// to that location is at least a given value.
+assert.equal(list.find('n', i), list.nth(i));
+</pre>
+
+It is possible to extend SplayList to track other order statistics
+beyond n; just override the orderstats method.  The SplayList class
+has an extend method for conveniently creating subclasses that
+override SplayList methods.  The orderstats method is passed
+four arguments.  It must fill in sum statistics in X to reflect the
+sum of the contribution of value V as well as subtrees L and R.
+Either or both of L and R may be null.
+
+<pre>
+var OrderList = SplayList.extend({
+  orderstats: function(V, X, L, R) {
+    // Calculate contriutions of V.
+    var n = 1,
+        k = V.k,
+        m = V.s.length;
+    // Add contributions of L and R.
+    if (L !== null) { n += L.n; k += L.k; m += L.m; }
+    if (R !== null) { n += R.n; k += R.k; m += R.m; }
+    // Store the result in X.
+    X.n = n;
+    X.k = k;
+    X.m = m;
+  }
+});
+</pre>
+
+The example above defines stats "n", "k", and "m".  If orderstats is
+overridden, the statistic "n" should count elements, as above.
 
 See test/test.js for an example of overriding orderstats to generalize
 to more than one order statistic.
