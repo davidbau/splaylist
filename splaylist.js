@@ -616,7 +616,7 @@ removeRange: function(first, limit) {
 },
 
 spliceList: function(first, limit, insert) {
-  var result = new SplayList(), root, last;
+  var result = new SplayList(), root, last, prev;
   if (typeof(first) === 'number') {
     first = this.nth(first);
   }
@@ -642,32 +642,37 @@ spliceList: function(first, limit, insert) {
     }
   }
   if (insert != null && insert._root !== null) {
-    if (limit !== null) {
-      //    (this)      (insert)          (this)    (insert)
-      //    limit         last              L         last
-      //    /   \    +    /      ->              +    /  \
-      //   L     R       T                           T    limit
-      //                                                    \
-      //                                                     R
-      splayUp(insert, (last = insert.last()));
-      last._R = limit;
-      limit._P = last;
-      this._root = limit._L;
-      limit._L = null;
-      // leave root._P invalid for now, because it will be overwritten.
-      reorder(insert, limit);
-      reorder(insert, last);
-      limit._R = null;
+    if (limit == null) {
+      //  (this)}      (insert)         (this)
+      //                limit            limit
+      //    L    +        \      ->      /  \
+      //                   T            L    T
+      splayUp(insert, (limit = insert.first()));
+      limit._L = this._root;
+      if (limit._L !== null) limit._L._P = limit;
+      this._root = limit;
+    } else if (limit._L === null) {
+      //    (this)      (insert)          (this)
+      //    limit                         limit
+      //        \    +      T     ->      /   \
+      //         R                       T     R
+      limit._L = insert._root;
+      limit._L._P = limit;
+    } else {
+      //    (this)      (insert)          (this)
+      //    limit         root            limit
+      //    /   \    +       \    ->      /   \
+      //   L     R            T        root    R
+      //                                /  \
+      //                               L    T
+      splayUp(insert, (root = insert.first()));
+      root._L = limit._L;
+      root._L._P = root;
+      limit._L = root;
+      root._P = limit;
+      reorder(this, first);
     }
-    //  (this)}      (insert)         (this)
-    //   L            root             root
-    //         +        \      ->      /  \
-    //                   T            L    T
-    splayUp(insert, (root = insert.first()));
-    root._L = this._root;
-    if (root._L !== null) root._L._P = root;
-    this._root = root;
-    reorder(this, root);
+    reorder(this, limit);
     insert._root = null;
   }
   return result;

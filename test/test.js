@@ -6,6 +6,8 @@ var SplayList = require('../splaylist').SplayList,
     assert = require('assert');
 
 var n = 1e5;
+var splicen = 1e4;
+var x;
 
 function time(text, fn) {
   var start = +(new Date);
@@ -14,7 +16,15 @@ function time(text, fn) {
   console.log(text, (end - start) / 1000 + 'sec');
 }
 
-var x;
+function rand(n) {
+  return Math.floor(Math.random() * n);
+}
+
+function array(a) {
+  if (a instanceof Array) return a;
+  if (!a) return [];
+  return a.toArray();
+}
 
 time(n + ' unshifts and nths on plain tree', function() {
   x = new SplayList();
@@ -80,13 +90,9 @@ time(n + ' unshifts and finds on an object tree', function() {
   assert.equal(total, x.stat('k'));
 });
 
-function rand(n) {
-  return Math.floor(Math.random() * n);
-}
-
-time(n + ' random splices on a plain tree', function() {
+time(splicen + ' random splices on a plain tree', function() {
   var lists = [], arrays = [];
-  for (var j = 0; j < n; ++j) {
+  for (var j = 0; j < splicen; ++j) {
     if (!arrays.length) {
       arrays.push([]);
       lists.push(new SplayList);
@@ -98,12 +104,10 @@ time(n + ' random splices on a plain tree', function() {
       var str = 'node' + j;
       cura.push(str);
       curl.push(str);
-      console.log('pushing', str);
     } else if (choice == 3) {
       var str = 'node' + j;
       cura.unshift(str);
       curl.unshift(str);
-      console.log('unshifting', str);
     } else {
       arrays.pop();
       lists.pop();
@@ -115,13 +119,11 @@ time(n + ' random splices on a plain tree', function() {
       args.push.apply(args, insa);
       ra = cura.splice.apply(cura, args);
       if (choice) {
-        console.log('splice-list', start, len, insl && insl.length);
         rl = curl.spliceList(start, len, insl);
       } else {
-        console.log('splice-array', start, len, insa.length);
         rl = curl.spliceArray(start, len, insa);
       }
-      assert.deepEqual(ra, rl instanceof Array ? rl : rl ? rl.toArray() : []);
+      assert.deepEqual(ra, array(rl));
       arrays.push(cura);
       lists.push(curl);
       if (rl instanceof SplayList) {
@@ -129,8 +131,8 @@ time(n + ' random splices on a plain tree', function() {
         lists.push(rl);
       }
     }
-    assert.equal(cura.length, curl.length);
-    assert.deepEqual(ra, rl instanceof Array ? rl : rl.toArray());
+    // assert.equal(cura.length, curl.length);
+    assert.deepEqual(cura, array(curl));
     var index = rand(cura.length);
     assert.equal(cura[0], curl.get(0));
   }
