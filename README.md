@@ -7,8 +7,29 @@ version 0.0.0<br>
 Author: David Bau<br>
 Date: 2014 Dec 31
 
-Can be used as a plain script or a node.js module.
+A SplayList provides **both** fast array-index and fast list-insertion
+access.  It is useful for situations such as tracking an array of
+thousands of lines of text when insertions and deletions must be instant,
+yet indexing by line number or character must also be fast,
 
+This array-or-list replacement provides:
+
+* A linked-list interface with O(1) (nanosecond) next() and prev(), and
+  O(log n) (microsecond) insert(), remove(), splice() operations. These
+  operations are all fast regardless of the number of elements.
+* An array-style interface for skipping to the nth(i) item, or determining
+  the integer position of a node in O(log n) (microsecond) time.  Again
+  fast even for a large number of elements.
+
+The SplayList clas can also be extended to index items by multiple parallel
+order statistics, for example "total number of bytes to the left".
+Order statistics can be used in O(log n) time.
+
+Internally a SplayList is a balanced tree (a splay tree).  In practice,
+splay trees perform better than O(log n) because they take advantage
+of the typical locality of access in real applications.
+
+This library is packaged to be used as a plain script or a node.js module.
 
 Script tag usage
 ----------------
@@ -225,7 +246,7 @@ to more than one order statistic.
 LICENSE (MIT)
 -------------
 
-Copyright 2014 David Bau.
+Copyright 2015 David Bau.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

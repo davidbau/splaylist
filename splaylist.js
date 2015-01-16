@@ -845,5 +845,5 @@ SplayList.Location = Location;
 exports.SplayList = SplayList;
 
 })(
-  (typeof module) === 'object' && module.exports || window
+  (typeof module) === 'object' && module.exports || this
 );
