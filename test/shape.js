@@ -7,7 +7,7 @@ for (var j = 0; j < 10; ++j) {
 }
 
 assert.equal(x.toString(),
-  "→node9 {n:10}\n" +
+  "━node9 {n:10}\n" +
   " └╴node8 {n:9}\n" +
   "   └╴node7 {n:8}\n" +
   "     └╴node6 {n:7}\n" +
@@ -29,7 +29,7 @@ assert.equal(x.toString(),
   " │     │ ┌╴node3 {n:1}\n" +
   " │     └╴node2 {n:3}\n" +
   " │       └╴node1 {n:1}\n" +
-  "→node0 {n:10}\n");
+  "━node0 {n:10}\n");
 
 x.nth(1);
 assert.equal(x.toString(),
@@ -41,7 +41,7 @@ assert.equal(x.toString(),
   " │ │ ┌╴node4 {n:3}\n" +
   " │ │ │ └╴node3 {n:1}\n" +
   " │ └╴node2 {n:4}\n" +
-  "→node1 {n:10}\n" +
+  "━node1 {n:10}\n" +
   " └╴node0 {n:1}\n");
 
 x.nth(2);
@@ -53,7 +53,7 @@ assert.equal(x.toString(),
   " │ │ ┌╴node5 {n:1}\n" +
   " │ └╴node4 {n:3}\n" +
   " │   └╴node3 {n:1}\n" +
-  "→node2 {n:10}\n" +
+  "━node2 {n:10}\n" +
   " └╴node1 {n:2}\n" +
   "   └╴node0 {n:1}\n");
 
@@ -65,7 +65,7 @@ assert.equal(x.toString(),
   "   ┌╴node6 {n:5}\n" +
   "   │ └╴node5 {n:1}\n" +
   " ┌╴node4 {n:6}\n" +
-  "→node3 {n:10}\n" +
+  "━node3 {n:10}\n" +
   " └╴node2 {n:3}\n" +
   "   └╴node1 {n:2}\n" +
   "     └╴node0 {n:1}\n");
@@ -77,7 +77,7 @@ assert.equal(x.toString(),
   "   │ └╴node7 {n:1}\n" +
   " ┌╴node6 {n:5}\n" +
   " │ └╴node5 {n:1}\n" +
-  "→node4 {n:10}\n" +
+  "━node4 {n:10}\n" +
   " └╴node3 {n:4}\n" +
   "   └╴node2 {n:3}\n" +
   "     └╴node1 {n:2}\n" +
@@ -89,7 +89,7 @@ assert.equal(x.toString(),
   "   ┌╴node8 {n:3}\n" +
   "   │ └╴node7 {n:1}\n" +
   " ┌╴node6 {n:4}\n" +
-  "→node5 {n:10}\n" +
+  "━node5 {n:10}\n" +
   " └╴node4 {n:5}\n" +
   "   └╴node3 {n:4}\n" +
   "     └╴node2 {n:3}\n" +
@@ -101,7 +101,7 @@ assert.equal(x.toString(),
   "   ┌╴node9 {n:1}\n" +
   " ┌╴node8 {n:3}\n" +
   " │ └╴node7 {n:1}\n" +
-  "→node6 {n:10}\n" +
+  "━node6 {n:10}\n" +
   " └╴node5 {n:6}\n" +
   "   └╴node4 {n:5}\n" +
   "     └╴node3 {n:4}\n" +
@@ -113,7 +113,7 @@ x.nth(7);
 assert.equal(x.toString(),
   "   ┌╴node9 {n:1}\n" +
   " ┌╴node8 {n:2}\n" +
-  "→node7 {n:10}\n" +
+  "━node7 {n:10}\n" +
   " └╴node6 {n:7}\n" +
   "   └╴node5 {n:6}\n" +
   "     └╴node4 {n:5}\n" +
@@ -125,7 +125,7 @@ assert.equal(x.toString(),
 x.nth(8);
 assert.equal(x.toString(),
   " ┌╴node9 {n:1}\n" +
-  "→node8 {n:10}\n" +
+  "━node8 {n:10}\n" +
   " └╴node7 {n:8}\n" +
   "   └╴node6 {n:7}\n" +
   "     └╴node5 {n:6}\n" +
@@ -137,7 +137,7 @@ assert.equal(x.toString(),
 
 x.nth(9);
 assert.equal(x.toString(),
-  "→node9 {n:10}\n" +
+  "━node9 {n:10}\n" +
   " └╴node8 {n:9}\n" +
   "   └╴node7 {n:8}\n" +
   "     └╴node6 {n:7}\n" +

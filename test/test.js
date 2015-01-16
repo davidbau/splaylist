@@ -91,7 +91,7 @@ time(n + ' unshifts and finds on an object tree', function() {
 });
 
 time(splicen + ' random splices on a plain tree', function() {
-  var lists = [], arrays = [];
+  var lists = [], arrays = [], index;
   for (var j = 0; j < splicen; ++j) {
     if (!arrays.length) {
       arrays.push([]);
@@ -101,12 +101,10 @@ time(splicen + ' random splices on a plain tree', function() {
         curl = lists[lists.length - 1],
         choice = rand(4);
     if (choice == 2) {
-      console.log('push');
       var str = 'node' + j;
       cura.push(str);
       curl.push(str);
     } else if (choice == 3) {
-      console.log('unshift');
       var str = 'node' + j;
       cura.unshift(str);
       curl.unshift(str);
@@ -121,14 +119,16 @@ time(splicen + ' random splices on a plain tree', function() {
       args.push.apply(args, insa);
       ra = cura.splice.apply(cura, args);
       if (choice) {
-      console.log('splicelist');
         rl = curl.spliceList(start, len, insl);
       } else {
-      console.log('splicearray');
-        rl = curl.spliceList(start, len, insl);
-        rl = curl.spliceArray(start, len, insa);
+        rl = new SplayList;
+        (rand(2) ? rl.push : rl.unshift).apply(
+          rl, curl.spliceArray(start, len, insa));
       }
-      assert.deepEqual(ra, array(rl));
+      // assert.deepEqual(ra, array(rl));
+      assert.equal(ra.length, rl.length);
+      index = rand(ra.length);
+      assert.equal(ra[index], rl.get(index));
       arrays.push(cura);
       lists.push(curl);
       if (rl instanceof SplayList) {
@@ -136,15 +136,10 @@ time(splicen + ' random splices on a plain tree', function() {
         lists.push(rl);
       }
     }
-    if (cura.length != curl.length) {
-      console.log(cura.length, cura);
-      console.log(curl.length);
-      console.log(curl.toString());
-    }
+    // assert.deepEqual(cura, array(curl));
     assert.equal(cura.length, curl.length);
-    assert.deepEqual(cura, array(curl));
-    var index = rand(cura.length);
-    assert.equal(cura[0], curl.get(0));
+    index = rand(cura.length);
+    assert.equal(cura[index], curl.get(index));
   }
 });
 

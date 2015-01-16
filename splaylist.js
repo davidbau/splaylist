@@ -384,7 +384,7 @@ function dump(out, node, depth) {
   var line = node.toString(),
       prev = node, scan = prev._P, j = depth, rchild, rparent;
   if (scan === null) {
-    line = '\u2192' + line;
+    line = '\u2501' + line;
   } else {
     rchild = (scan._R === prev);
     if (rchild) {
@@ -453,7 +453,7 @@ nth: function(index) {
 },
 
 get: function(loc) {
-  if (typeof(loc) === 'number') loc = this.nth(loc);
+  loc = this.nth(loc);
   if (loc !== null) return loc.val();
 },
 
@@ -495,8 +495,10 @@ stat: function(key, location) {
 },
 
 unshift: function(value) {
-  if (arguments.length > 1) {
-    this.spliceArray(0, 0, arguments);
+  if (arguments.length !== 1) {
+    if (arguments.length > 1) {
+      this.spliceArray(0, 0, arguments);
+    }
   } else {
     var root = new Location(value);
     root._R = this._root;
@@ -508,8 +510,10 @@ unshift: function(value) {
 },
 
 push: function(value) {
-  if (arguments.length > 1) {
-    this.spliceArray(null, 0, arguments);
+  if (arguments.length !== 1) {
+    if (arguments.length > 1) {
+      this.spliceArray(null, 0, arguments);
+    }
   } else {
     var root = new Location(value);
     root._L = this._root;
@@ -670,7 +674,7 @@ spliceList: function(first, limit, insert) {
       root._L._P = root;
       limit._L = root;
       root._P = limit;
-      reorder(this, first);
+      reorder(this, root);
     }
     reorder(this, limit);
     insert._root = null;
@@ -702,7 +706,7 @@ spliceArray: function(loc, count, values) {
   if (count == null) count = Infinity;
   numeric = typeof(count) === 'number';
   if (loc === 0) loc = this.first();
-  if (typeof(loc) === 'number') {
+  else if (typeof(loc) === 'number') {
     loc = this.nth(loc);
   }
   if (loc !== null && (!numeric || count > 0)) {
@@ -726,26 +730,35 @@ spliceArray: function(loc, count, values) {
     }
   }
   if (values.length === 0) return result;
-  // assert(after === null || after === this._root);
-  if (after === null) {
-    left = this._root;
-  } else {
-    left = after._L;
-    after._L = null;
-    reorder(this, after);
-  }
-  for (var j = values.length - 1; j >= 0; --j) {
+  j = values.length - 1;
+  loc = new Location(values[j]);
+  while (--j >= 0) {
+    sub = loc;
     loc = new Location(values[j]);
-    loc._R = after;
-    if (after !== null) after._P = loc;
-    if (j === 0) {
-      loc._L = left;
-      if (left !== null) left._P = loc;
-      loc._P = null;
-      this._root = loc;
-    }
-    reorder(this, loc);
-    after = loc;
+    loc._R = sub;
+    sub._P = loc;
+    reorder(this, sub);
+  }
+  //   after                after
+  //   /   \                /   \
+  // left   T     ->    loc=[0]  T
+  //                      / \
+  //                  left  [1]
+  //                          \
+  //                           ...
+  left = after === null ? this._root : after._L;
+  if (left !== null) {
+    loc._L = left;
+    left._P = loc;
+  }
+  reorder(this, loc);
+  if (after !== null) {
+    after._L = loc;
+    loc._P = after;
+    this._root = after;
+    reorder(this, after);
+  } else {
+    this._root = loc;
   }
   return result;
 },
