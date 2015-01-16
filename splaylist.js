@@ -337,7 +337,7 @@ function removeRange(tree, first, limit) {
   if (limit == null) {
     splayUp(tree, first);
     //       first                   L
-    //       /  \
+    //       /  \          ->
     //      L   DELETE
     tree._root = first._L;
     if (tree._root !== null) tree._root._P = null;
@@ -361,7 +361,7 @@ function removeRange(tree, first, limit) {
     // Single-level down case.
     //          limit               limit
     //          /   \               /   \
-    //       first   R             L     R
+    //       first   R     ->      L     R
     //       /  \
     //      L   DELETE
     limit._L._P = null;
@@ -414,6 +414,10 @@ function dump(out, node, depth) {
   if (node._L !== null) {
     result += dump(out, node._L, depth + 1);
   }
+}
+
+function sliceargs(args, n) {
+  return Array.prototype.slice.call(args, n);
 }
 
 var SplayList = function(orderstats) {
@@ -546,39 +550,63 @@ pop: function() {
 },
 
 insertAfter: function(location, value) {
-  if (location === null) { return this.unshift(value); }
-  splayUp(this, location);
-  var oldroot = this._root;
-  var root = new Location(value);
-  root._L = oldroot;
-  if (oldroot !== null) {
-    oldroot._P = root;
-    root._R = oldroot._R;
-    if (root._R) root._R._P = root;
-    oldroot._R = null;
-    reorder(this, oldroot);
+  if (location === null) {
+    this.unshift.apply(this, sliceargs(arguments, 1));
+    if (arguments.length > 1) {
+      return this.first();
+    }
+  } else if (arguments.length !== 2) {
+    if (arguments.length > 2) {
+      this.spliceArray(location.next(), 0, sliceargs(arguments, 1));
+      return location.next();
+    }
+  } else {
+    splayUp(this, location);
+    var oldroot = this._root;
+    var root = new Location(value);
+    root._L = oldroot;
+    if (oldroot !== null) {
+      oldroot._P = root;
+      root._R = oldroot._R;
+      if (root._R) root._R._P = root;
+      oldroot._R = null;
+      reorder(this, oldroot);
+    }
+    reorder(this, root);
+    this._root = root;
+    return root;
   }
-  reorder(this, root);
-  this._root = root;
-  return root;
 },
 
 insertBefore: function(location, value) {
-  if (location === null) { return this.push(value); }
-  splayUp(this, location);
-  var oldroot = this._root;
-  var root = new Location(value);
-  root._R = oldroot;
-  if (oldroot !== null) {
-    oldroot._P = root;
-    root._L = oldroot._L;
-    if (root._L) root._L._P = root;
-    oldroot._L = null;
-    reorder(this, oldroot);
+  if (location === null) {
+    this.push.apply(this, sliceargs(arguments, 1));
+    if (arguments.length > 1) {
+      return this._root; // push leaves first new location at root.
+    }
   }
-  reorder(this, root);
-  this._root = root;
-  return root;
+  if (arguments.length !== 2) {
+    if (arguments.length > 2) {
+      var prev = location.prev();
+      this.spliceArray(location, 0, sliceargs(arguments, 1));
+      return prev === null ? this.first() : prev.next();
+    }
+  } else {
+    splayUp(this, location);
+    var oldroot = this._root;
+    var root = new Location(value);
+    root._R = oldroot;
+    if (oldroot !== null) {
+      oldroot._P = root;
+      root._L = oldroot._L;
+      if (root._L) root._L._P = root;
+      oldroot._L = null;
+      reorder(this, oldroot);
+    }
+    reorder(this, root);
+    this._root = root;
+    return root;
+  }
 },
 
 removeAt: function(location) {
@@ -651,6 +679,9 @@ spliceList: function(first, limit, insert) {
     }
   }
   if (insert != null && insert._root !== null) {
+    if (insert.orderstats !== this.orderstats) {
+      throw new Error('incompatible list');
+    }
     if (limit == null) {
       //  (this)}      (insert)         (this)
       //                limit            limit

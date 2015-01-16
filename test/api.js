@@ -124,5 +124,24 @@ assert.equal(list.spliceList(null, null, list3).length, 0);
 assert.deepEqual(list.slice(),
   ["Pineapple", "Cherry", "Papaya", "Coconut", "Guava"]);
 
+// insertBefore can accept multiple arguments.
+// it returns the location of the first one inserted, if any.
+var locb = list.insertBefore(list.first().next(), "Blueberry", "Raspberry");
+assert.equal(locb.val(), "Blueberry");
+assert.equal(locb.next().val(), "Raspberry");
+assert.equal(list.first().next(), locb);
+// insertBefore null is the same as push.
+var locp = list.insertBefore(null, "Watermelon");
+assert.equal(locp.val(), "Watermelon");
+assert.equal(locp, list.last());
+// insertAfter can accept multiple arguments.
+// It returns the location of the first one inserted, if any.
+var loca = list.insertAfter(list.last().prev(), "Pumpkin", "Squash");
+assert.equal(loca.val(), "Pumpkin");
+assert.equal(loca.next().val(), "Squash");
+assert.equal(list.last().prev(), loca.next());
+// insertAfter null is the same as unshift.
+var locp = list.insertAfter(null, "Almond");
+assert.equal(locp, list.first());
 
 
