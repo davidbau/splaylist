@@ -32,6 +32,32 @@ var Location = function(value) {
 
 Location.prototype = {
   val: function() { return this._V; },
+  next: function() {
+    var loc = this, next = loc._R;
+    if (next !== null) {
+      for (loc = next._L; loc != null; loc = next._L) {
+        next = loc;
+      }
+    } else {
+      for (next = loc._P; next != null && next._R === loc; next = loc._P) {
+        loc = next;
+      }
+    }
+    return next;
+  },
+  prev: function() {
+    var loc = this, prev = loc._L;
+    if (prev !== null) {
+      for (loc = prev._R; loc != null; loc = prev._R) {
+        prev = loc;
+      }
+    } else {
+      for (prev = loc._P; prev != null && prev._L === loc; prev = loc._P) {
+        loc = prev;
+      }
+    }
+    return prev;
+  },
   toString: function() {
     var total = {}, k;
     for (k in this) if (k.charAt(0) != '_') total[k] = this[k];
@@ -274,20 +300,6 @@ function last(tree) {
   return prev
 }
 
-function successor(loc) {
-  var next = loc._R;
-  if (next !== null) {
-    for (loc = next._L; loc != null; loc = next._L) {
-      next = loc;
-    }
-  } else {
-    for (next = loc._P; next != null && next._R === loc; next = loc._P) {
-      loc = next;
-    }
-  }
-  return next;
-}
-
 function forward(loc, count, key) {
   key = key || 'n';
   var next = loc, R = next._R, rightsum;
@@ -318,20 +330,6 @@ function forward(loc, count, key) {
     count -= next[key];
   }
   return next;
-}
-
-function predecessor(loc) {
-  var prev = loc._L;
-  if (prev !== null) {
-    for (loc = prev._R; loc != null; loc = prev._R) {
-      prev = loc;
-    }
-  } else {
-    for (prev = loc._P; prev != null && prev._L === loc; prev = loc._P) {
-      loc = prev;
-    }
-  }
-  return prev;
 }
 
 function removeRange(tree, first, limit) {
@@ -446,7 +444,7 @@ each: function(fn) {
   var loc = first(this);
   while (loc !== null) {
     fn(loc);
-    loc = successor(loc);
+    loc = loc.next();
   }
 },
 
@@ -588,7 +586,7 @@ removeAt: function(location) {
     this._root = location._R;
     this._root._P = null;
   } else {
-    splayUp(this, successor(this._root));
+    splayUp(this, this._root.next());
     // assert.equal(this._root._L, location);
     // assert.equal(location._R, null);
     //         sucessor           successor
@@ -684,7 +682,7 @@ toArray: function(loc, count) {
   }
   while (result.length < count && loc !== null) {
     result.push(loc.val());
-    loc = successor(loc);
+    loc = loc.next();
   }
   return result;
 },
@@ -707,7 +705,7 @@ spliceArray: function(loc, count, values) {
     while (after !== null) {
       if (numeric ? result.length >= count : after == count) break;
       result.push(after.val());
-      after = successor(after);
+      after = after.next();
     }
     if (!numeric && after != count) {
       result = [];
@@ -750,10 +748,6 @@ spliceArray: function(loc, count, values) {
 first: function() { return first(this); },
 
 last: function() { return last(this); },
-
-next: successor,
-
-prev: predecessor,
 
 get length() {
   if (this._root === null) return 0;

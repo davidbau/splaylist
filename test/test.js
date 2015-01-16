@@ -29,7 +29,7 @@ time(n + ' unshifts and nths on plain tree', function() {
 time('start-to-end traversal on a ' + n + ' plain tree', function() {
   var loc = x.first();
   while (loc !== null) {
-    loc = x.next(loc);
+    loc = loc.next();
   }
 });
 
@@ -54,7 +54,7 @@ time(n + ' unshifts and finds on total-length tree', function() {
 time('start-to-end traversal on a ' + n + ' total-length tree', function() {
   var loc = x.first();
   while (loc !== null) {
-    loc = x.next(loc);
+    loc = loc.next();
   }
 });
 

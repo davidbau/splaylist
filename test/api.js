@@ -38,9 +38,11 @@ assert.equal(loc4.val(), 'unshifted');
 
 // Traveral is O(nanoseconds) using first and next, or last and prev.
 var expect = [loc4, loc2, loc1, loc3];
-for (var it = list.first(); it !== null; it = list.next(it)) {
+for (var it = list.first(); it !== null; it = it.next()) {
   assert.equal(expect.shift().val(), it.val());
 }
+assert.equal(list.last(), loc3);
+assert.equal(list.last().prev(), loc1);
 
 // Removal is O(microseconds).
 assert.equal(list.length, 4);
