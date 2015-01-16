@@ -5,7 +5,7 @@ require('./shape');
 var SplayList = require('../splaylist').SplayList,
     assert = require('assert');
 
-var n = 1e6;
+var n = 1e5;
 
 function time(text, fn) {
   var start = +(new Date);
@@ -22,7 +22,7 @@ time(n + ' unshifts and nths on plain tree', function() {
     x.unshift('node' + j);
     var k = Math.floor(Math.random() * x.length);
     loc = x.nth(k);
-    assert(loc.val() == 'node' + (j - k));
+    assert.equal(loc.val(), 'node' + (j - k));
   }
 });
 
@@ -48,7 +48,7 @@ time(n + ' unshifts and finds on total-length tree', function() {
     var k = Math.floor(Math.random() * total);
     loc = x.find('length', k);
   }
-  assert(9888890 == x.stat('length'));
+  assert.equal(888890, x.stat('length'));
 });
 
 time('start-to-end traversal on a ' + n + ' total-length tree', function() {
@@ -77,6 +77,62 @@ time(n + ' unshifts and finds on an object tree', function() {
     var k = Math.floor(Math.random() * total);
     loc = x.find('k', k);
   }
-  assert(total == x.stat('k'));
+  assert.equal(total, x.stat('k'));
+});
+
+function rand(n) {
+  return Math.floor(Math.random() * n);
+}
+
+time(n + ' random splices on a plain tree', function() {
+  var lists = [], arrays = [];
+  for (var j = 0; j < n; ++j) {
+    if (!arrays.length) {
+      arrays.push([]);
+      lists.push(new SplayList);
+    }
+    var cura = arrays[arrays.length - 1],
+        curl = lists[lists.length - 1],
+        choice = rand(4);
+    if (choice == 2) {
+      var str = 'node' + j;
+      cura.push(str);
+      curl.push(str);
+      console.log('pushing', str);
+    } else if (choice == 3) {
+      var str = 'node' + j;
+      cura.unshift(str);
+      curl.unshift(str);
+      console.log('unshifting', str);
+    } else {
+      arrays.pop();
+      lists.pop();
+      var start = rand(cura.length),
+          len = rand(cura.length - start),
+          insa = arrays.pop() || [],
+          insl = lists.pop() || null,
+          rl, ra, args = [start, len];
+      args.push.apply(args, insa);
+      ra = cura.splice.apply(cura, args);
+      if (choice) {
+        console.log('splice-list', start, len, insl && insl.length);
+        rl = curl.spliceList(start, len, insl);
+      } else {
+        console.log('splice-array', start, len, insa.length);
+        rl = curl.spliceArray(start, len, insa);
+      }
+      assert.deepEqual(ra, rl instanceof Array ? rl : rl ? rl.toArray() : []);
+      arrays.push(cura);
+      lists.push(curl);
+      if (rl instanceof SplayList) {
+        arrays.push(ra);
+        lists.push(rl);
+      }
+    }
+    assert.equal(cura.length, curl.length);
+    assert.deepEqual(ra, rl instanceof Array ? rl : rl.toArray());
+    var index = rand(cura.length);
+    assert.equal(cura[0], curl.get(0));
+  }
 });
 
