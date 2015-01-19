@@ -148,6 +148,8 @@ function splayUp(tree, x) {
         rightRotate(tree, p);
         leftRotate(tree, g);
       } else {
+        if (p._R !== x) { console.log('p._R?', p.val(), p._R && p._R.val()); }
+        if (g._L !== p) { console.log('g._L?', g.val(), g._L && g._L.val()); }
         // Zig-zag left-right.
         leftRotate(tree, p);
         rightRotate(tree, g);
@@ -621,24 +623,38 @@ removeAt: function(location) {
     splayUp(this, location);
   }
   if (location._R === null) {
-    // assert.equal(this._root, location);
     this._root = location._L;
-    this._root._P = null;
+    if (this._root !== null) this._root._P = null;
   } else if (location._L === null) {
     this._root = location._R;
     this._root._P = null;
   } else {
     splayUp(this, this._root.next());
-    // assert.equal(this._root._L, location);
-    // assert.equal(location._R, null);
-    //         sucessor           successor
-    //          /   \               /   \
-    //       DELETE  R             L     R
-    //       /
-    //      L
-    this._root._L = location._L
+    if (location._P === this._root) {
+      // Just one level down.
+      //
+      //         sucessor           successor
+      //          /   \               /   \
+      //       DELETE  R             L     R
+      //       /
+      //      L
+      this._root._L = location._L;
+      if (this._root._L) this._root._L._P = this._root;
+    } else {
+      // Two-levels down due to a zig-sag.
+      //
+      //         sucessor           successor
+      //          /   \               /   \
+      //         L     R             L     R
+      //        / \                 / \
+      //       T   DELETE          T   S
+      //           /
+      //          S
+      this._root._L._R = location._L;
+      if (location._L !== null) { location._L._P = this._root._L; }
+      reorder(this, this._root._L);
+    }
     location._L = location._P = null;
-    if (this._root._L) this._root._L._P = this._root._L;
     reorder(this, this._root);
   }
 },
