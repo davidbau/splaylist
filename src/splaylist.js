@@ -702,7 +702,7 @@ spliceList: function(first, limit, insert) {
   if (insert != null && insert._root !== null) {
     if (insert.orderstats !== this.orderstats ||
         insert.constructor !== this.constructor) {
-      throw new Error('incompatible list');
+      throw new TypeError('incompatible list');
     }
     if (limit == null) {
       //  (this)}      (insert)         (this)
