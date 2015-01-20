@@ -1,8 +1,5 @@
-// Run simple tests first.
-// require('./api');
-// require('./shape');
-
-var SplayList = require('../splaylist').SplayList,
+var SplayList = require('../src/splaylist').SplayList,
+    blanket = require('blanket'),
     assert = require('assert');
 
 var n = 1e5;
@@ -99,7 +96,7 @@ it(n + ' unshifts and finds on an object tree', function() {
 
 it(splicen + ' random splices on a plain tree', function() {
   this.slow(2000);
-  var lists = [], arrays = [], index;
+  var lists = [], arrays = [], index, part1, part2;
   for (var j = 0; j < splicen; ++j) {
     if (!arrays.length) {
       arrays.push([]);
@@ -107,12 +104,13 @@ it(splicen + ' random splices on a plain tree', function() {
     }
     var cura = arrays[arrays.length - 1],
         curl = lists[lists.length - 1],
-        choice = rand(4);
-    if (choice == 2 || (choice == 3 && cura.length == 0)) {
+        choice = rand(10);
+    if (choice < 4 || (choice < 8 && cura.length == 0)) {
       var args = [];
-      if (rand(2)) args.push('node' + j + '-A');
-      if (rand(2)) args.push('node' + j + '-B');
-      if (rand(2)) args.push('node' + j + '-C');
+      if (rand(2)) args.push('node' + j + '-a');
+      if (rand(2)) args.push('node' + j + '-b');
+      if (rand(2)) args.push('node' + j + '-c');
+      if (rand(2)) args.push('node' + j + '-d');
       if (rand(2)) {
         cura.push.apply(cura, args);
         curl.push.apply(curl, args);
@@ -120,7 +118,7 @@ it(splicen + ' random splices on a plain tree', function() {
         cura.unshift.apply(cura, args);
         curl.unshift.apply(curl, args);
       }
-    } else if (choice == 3) {
+    } else if (choice < 8) {
       var str = 'node' + j,
           k = rand(cura.length),
           mode = rand(3);
@@ -147,7 +145,7 @@ it(splicen + ' random splices on a plain tree', function() {
           rl, ra, args = [start, len];
       args.push.apply(args, insa);
       ra = cura.splice.apply(cura, args);
-      if (choice) {
+      if (choice < 9) {
         rl = curl.spliceList(start, len, insl);
       } else {
         rl = new SplayList;
@@ -167,8 +165,13 @@ it(splicen + ' random splices on a plain tree', function() {
     }
     // assert.deepEqual(cura, array(curl));
     assert.equal(cura.length, curl.length);
-    index = rand(cura.length);
-    assert.equal(cura[index], curl.get(index));
+    if (cura.length) {
+      index = rand(cura.length);
+      part2 = rand(index);
+      part1 = rand(part2);
+      assert.equal(cura[index],
+        curl.nth(part1).skip(part2 - part1).skip(index - part2).val());
+    }
   }
 });
 

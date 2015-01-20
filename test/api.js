@@ -1,4 +1,5 @@
-var SplayList = require('../splaylist').SplayList,
+var SplayList = require('../src/splaylist').SplayList,
+    blanket = require('blanket'),
     assert = require('assert');
 
 describe('SplayList API', function() {
@@ -41,6 +42,15 @@ assert.equal(list.toString(),
   "━before {n:4}\n" +
   " └╴unshifted {n:1}\n"
 );
+
+assert.equal((new SplayList).toString(), "empty\n");
+
+assert.equal((new SplayList('a','b','c')).toString(),
+ "   ┌╴c {n:1}\n" +
+ " ┌╴b {n:2}\n" +
+ "━a {n:3}\n"
+);
+
 });
 
 it('allows traversal using first/next', function() {

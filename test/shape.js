@@ -1,4 +1,5 @@
-var SplayList = require('../splaylist').SplayList,
+var SplayList = require('../src/splaylist').SplayList,
+    blanket = require('blanket'),
     assert = require('assert');
 
 describe('Splay implementation test', function() {

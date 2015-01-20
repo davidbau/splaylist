@@ -59,6 +59,9 @@ Location.prototype = {
     }
     return prev;
   },
+  skip: function(n, key) {
+    return forward(this, n, key);
+  },
   toString: function() {
     var total = {}, k;
     for (k in this) if (k.charAt(0) != '_') total[k] = this[k];
@@ -148,8 +151,6 @@ function splayUp(tree, x) {
         rightRotate(tree, p);
         leftRotate(tree, g);
       } else {
-        if (p._R !== x) { console.log('p._R?', p.val(), p._R && p._R.val()); }
-        if (g._L !== p) { console.log('g._L?', g.val(), g._L && g._L.val()); }
         // Zig-zag left-right.
         leftRotate(tree, p);
         rightRotate(tree, g);
@@ -162,6 +163,7 @@ function splayUp(tree, x) {
   reorder(tree, x);
 }
 
+/*
 // Binary search: find first node where sum of key up to and including
 // that node would exceed value.
 function findByOrder(tree, key, value) {
@@ -187,6 +189,7 @@ function findByOrder(tree, key, value) {
   }
   return null;
 }
+*/
 
 // Global temporary object to avoid allocation.
 var globalStub = new Location();
@@ -308,36 +311,44 @@ function last(tree) {
   return prev
 }
 
-function forward(loc, count, key) {
+function forward(cur, count, key) {
   key = key || 'n';
-  var next = loc, R = next._R, rightsum;
-  if (R !== null) { rightsum = R[key]; }
-  while (count > 0) {
-    if (R !== null) {
-      next = R;
-      if (rightsum < count) {
-        count -= treesum;
-      } else {
-        for (loc = next._L; loc != null; loc = next._L) {
-          if (loc[key] < count) {
-            break;
-          }
-          next = loc;
-        }
+  var cur, R, L = cur._L, Cs, Rs, Ls;
+  Ls = L === null ? 0 : L[key];
+  for (;;) {
+    Cs = cur[key];
+    R = cur._R;
+    Rs = R === null ? 0 : R[key];
+    count -= (Cs - Ls - Rs);
+    if (count < 0) return cur;
+    if (count < Rs) {
+      // Down-right once
+      cur = R;
+      // Then scan down-left
+      for (;;) {
+        L = cur._L;
+        Ls = L === null ? 0 : L[key];
+        if (count >= Ls) break;
+        cur = L;
       }
+      count -= Ls;
     } else {
-      for (loc = next, next = loc._P; next != null && next._R === loc;) {
-        loc = next;
-        next = loc._P;
+      count -= Rs;
+      for (;;) {
+        // Scan up while was-right-child
+        next = cur._P;
+        if (next === null) return null;
+        if (next._L === cur) {
+          // Then once up was-left-child
+          L = cur;
+          Ls = cur[key];
+          break;
+        }
+        cur = next;
       }
-      if (next === null) break;
-      count += loc[key];
+      cur = next;
     }
-    R = next._R;
-    if (R !== null) { count += (rightsum = next._R[key]); }
-    count -= next[key];
   }
-  return next;
 }
 
 function removeRange(tree, first, limit) {
@@ -382,7 +393,7 @@ function removeRange(tree, first, limit) {
 
 function dump(out, node, depth) {
   if (!node) {
-    out("null");
+    out("empty");
     return;
   }
   var result = "";
@@ -427,10 +438,10 @@ function sliceargs(args, n) {
   return Array.prototype.slice.call(args, n);
 }
 
-var SplayList = function(orderstats) {
+var SplayList = function() {
   this._root = null;
-  if (orderstats) {
-    this.orderstats = orderstats;
+  if (arguments.length) {
+    this.push.apply(this, arguments);
   }
 };
 
@@ -452,14 +463,6 @@ orderstats: function(V, X, L, R) {
   if (L !== null) v += L.n;
   if (R !== null) v += R.n;
   X.n = v;
-},
-
-each: function(fn) {
-  var loc = first(this);
-  while (loc !== null) {
-    fn(loc);
-    loc = loc.next();
-  }
 },
 
 nth: function(index) {

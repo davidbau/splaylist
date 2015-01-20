@@ -2,14 +2,20 @@
   "name": "splaylist",
   "version": "0.0.0",
   "description": "Fast splay tree with order statistics. As fast as a linked list for insertion, deletion, and traversal, but much faster than a list for indexed access and running counts.",
-  "main": "splaylist.js",
+  "main": "src/splaylist.js",
   "keywords": [
     "random",
     "seed",
     "crypto"
   ],
   "scripts": {
-    "test": "node_modules/.bin/mocha"
+    "test": "node_modules/.bin/mocha",
+    "coverage": "mkdir -p out; node_modules/.bin/mocha -r blanket -R html-cov > out/coverage.html"
+  },
+  "config": {
+    "blanket": {
+      "pattern": "src"
+    }
   },
   "repository": {
     "type": "git",
@@ -22,6 +28,7 @@
   },
   "homepage": "https://github.com/davidbau/splaylist",
   "devDependencies": {
+    "blanket": "latest",
     "mocha": "latest"
   }
 }
