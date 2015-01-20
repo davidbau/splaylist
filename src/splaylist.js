@@ -635,30 +635,27 @@ removeAt: function(location) {
     this._root._P = null;
   } else {
     splayUp(this, this._root.next());
-    if (location._P === this._root) {
-      // Just one level down.
-      //
-      //         sucessor           successor
-      //          /   \               /   \
-      //       DELETE  R             L     R
-      //       /
-      //      L
-      this._root._L = location._L;
-      if (this._root._L) this._root._L._P = this._root;
-    } else {
-      // Two-levels down due to a zig-sag.
-      //
-      //         sucessor           successor
-      //          /   \               /   \
-      //         L     R             L     R
-      //        / \                 / \
-      //       T   DELETE          T   S
-      //           /
-      //          S
-      this._root._L._R = location._L;
-      if (location._L !== null) { location._L._P = this._root._L; }
-      reorder(this, this._root._L);
-    }
+    // The old root is now just one or two levels down to the
+    // left, and only a zig-zig could move it two levels down:
+    //
+    //         sucessor
+    //          /   \
+    //         X     R
+    //        /
+    //     DELETE
+    //
+    // But since the successor comes right after the node
+    // to be deleted, there cannot be a node ("X") between.
+    // Therefore, zig-zig wasn't done, and we must now be
+    // just one level down, with nothing between:
+    //
+    //         sucessor           successor
+    //          /   \               /   \
+    //       DELETE  R     ->      L     R
+    //       /
+    //      L
+    this._root._L = location._L;
+    if (this._root._L) this._root._L._P = this._root;
     location._L = location._P = null;
     reorder(this, this._root);
   }
@@ -766,7 +763,7 @@ splice: function(loc, count) {
 
 spliceArray: function(loc, count, values) {
   var after, left, j, len, loc, result = [], numeric;
-      // Loc = this.constructor.Location;
+      Loc = this.constructor.Location;
   if (count == null) count = Infinity;
   numeric = typeof(count) === 'number';
   if (loc === 0) loc = this.first();
@@ -781,7 +778,9 @@ spliceArray: function(loc, count, values) {
       after = after.next();
     }
     if (!numeric && after != count) {
-      result = [];
+      // If splicing locations and the "count" pointer doesn't come
+      // after the starting location, then we should splice-nothing.
+      result.length = 0;
       after = loc;
       splayUp(this, after);
     } else {
@@ -795,10 +794,10 @@ spliceArray: function(loc, count, values) {
   }
   if (values.length === 0) return result;
   j = values.length - 1;
-  loc = new Location(values[j]);
+  loc = new Loc(values[j]);
   while (--j >= 0) {
     sub = loc;
-    loc = new Location(values[j]);
+    loc = new Loc(values[j]);
     loc._R = sub;
     sub._P = loc;
     reorder(this, sub);

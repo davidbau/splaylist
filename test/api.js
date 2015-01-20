@@ -206,15 +206,18 @@ list.removeRange(list.first().next(), 3);
 assert.equal(list.get(4), 'Watermelon');
 list.removeRange(null, 1);
 assert.equal(list.get(4), 'Watermelon');
+});
 
+it('can set values', function() {
 // set changes values.
-/*
 list.set(4, 'Honeydew');
 assert.equal(list.get(4), 'Honeydew');
+assert.equal(list.length, 5);
 list.set(list.nth(4).prev(), 'Cantaloupe');
 assert.equal(list.first().next().next().next().val(), 'Cantaloupe');
-*/
-
+assert.equal(list.length, 5);
 });
+
+
 
 });
