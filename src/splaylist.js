@@ -856,11 +856,13 @@ var extend = function(proto) {
       k;
   Subclass.prototype = Object.create(Baseclass.prototype);
   for (k in proto) if (proto.hasOwnProperty(k)) {
-    Subclass.prototype[k] = proto[k];
+    Object.defineProperty(Subclass.prototype, k,
+        Object.getOwnPropertyDescriptor(proto, k));
   }
   Subclass.prototype.constructor = Subclass;
   for (k in Baseclass) if (Baseclass.hasOwnProperty(k)) {
-    Subclass[k] = Baseclass[k];
+    Object.defineProperty(Subclass, k,
+        Object.getOwnPropertyDescriptor(Baseclass, k));
   }
   return Subclass;
 };

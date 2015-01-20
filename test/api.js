@@ -137,7 +137,11 @@ assert.deepEqual(list.splice(2),
   ["Lemon", "Mango"]);
 assert.deepEqual(list.slice(),
   ["Banana", "Orange"]);
-assert.deepEqual(list.splice(null, 0, "Pear", "Peach", "Plum"),
+assert.deepEqual(list.splice(null, 0, "Pear", "Plum"),
+  []);
+assert.deepEqual(list.slice(),
+  ["Banana", "Orange", "Pear", "Plum"]);
+assert.deepEqual(list.splice(list.last(), list.first(), "Peach"),
   []);
 assert.deepEqual(list.slice(),
   ["Banana", "Orange", "Pear", "Peach", "Plum"]);
@@ -218,6 +222,55 @@ assert.equal(list.first().next().next().next().val(), 'Cantaloupe');
 assert.equal(list.length, 5);
 });
 
+
+it('can update orderstats', function() {
+
+var TextList = SplayList.extend({
+  orderstats: function(V, X, L, R) {
+    var n = 1, textlen = V.length;
+    if (L !== null) { n += L.n; textlen += L.textlen; }
+    if (R !== null) { n += R.n; textlen += R.textlen; }
+    X.n = n; X.textlen = textlen;
+  },
+  get textlen() {
+    return this._root === null ? 0 : this._root.textlen;
+  }
+});
+
+var tl = new TextList(
+  'n0', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9');
+
+assert.equal(tl.length, 10);
+assert.equal(tl.textlen, 20);
+
+tl.set(5, 'changed')
+assert.equal(tl.length, 10);
+assert.deepEqual(tl.slice(), [
+  'n0', 'n1', 'n2', 'n3', 'n4', 'changed', 'n6', 'n7', 'n8', 'n9'
+]);
+var expect = 25;
+assert.equal(tl.textlen, expect);
+
+for (var cur = tl.first(); cur !== null; cur = cur.next()) {
+  if (cur.val() !== 'changed') expect += 5;
+  tl.set(cur, 'changed');
+  assert.equal(tl.length, 10);
+  assert.equal(tl.textlen, expect);
+}
+
+});
+
+it('prevents splicing incompatible lists', function() {
+  var OtherList = SplayList.extend();
+  var ol = new OtherList('hello');
+  var caught = null;
+  try {
+    list.spliceList(0, 0, ol);
+  } catch (e) {
+    caught = e.message;
+  }
+  assert.equal(caught, 'incompatible list');
+});
 
 
 });
