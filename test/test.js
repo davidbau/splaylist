@@ -103,13 +103,16 @@ time(splicen + ' random splices on a plain tree', function() {
         curl = lists[lists.length - 1],
         choice = rand(4);
     if (choice == 2 || (choice == 3 && cura.length == 0)) {
-      var str = 'node' + j;
+      var args = [];
+      if (rand(2)) args.push('node' + j + '-A');
+      if (rand(2)) args.push('node' + j + '-B');
+      if (rand(2)) args.push('node' + j + '-C');
       if (rand(2)) {
-        cura.push(str);
-        curl.push(str);
+        cura.push.apply(cura, args);
+        curl.push.apply(curl, args);
       } else {
-        cura.unshift(str);
-        curl.unshift(str);
+        cura.unshift.apply(cura, args);
+        curl.unshift.apply(curl, args);
       }
     } else if (choice == 3) {
       var str = 'node' + j,
