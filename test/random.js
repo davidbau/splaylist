@@ -25,8 +25,10 @@ function array(a) {
 
 describe('Random operation tests', function() {
 
+this.timeout(8000);
+
 it(n + ' unshifts and nths on plain tree', function() {
-  this.slow(1000);
+  this.slow(3000);
   x = new SplayList();
   for (var j = 0; j < n; ++j) {
     x.unshift('node' + j);
@@ -44,7 +46,7 @@ it('start-to-end traversal on a ' + n + ' plain tree', function() {
 });
 
 it(n + ' unshifts and finds on total-length tree', function() {
-  this.slow(1000);
+  this.slow(3500);
   x = new (SplayList.extend({orderstats: function(V, X, L, R) {
     var n = 1, len = V.length;
     if (L !== null) { n += L.n; len += L.length; }
@@ -75,7 +77,7 @@ for (var j = 0; j < n; ++j) {
 }
 
 it(n + ' unshifts and finds on an object tree', function() {
-  this.slow(1000);
+  this.slow(3000);
   x = new (SplayList.extend({orderstats: function(V, X, L, R) {
     var n = 1, k = V.k, m = V.s.length;
     if (L !== null) { n += L.n; k += L.k; m += L.m; }
@@ -95,7 +97,7 @@ it(n + ' unshifts and finds on an object tree', function() {
 });
 
 it(splicen + ' random splices on a plain tree', function() {
-  this.slow(2000);
+  this.slow(5000);
   var lists = [], arrays = [], index, part1, part2;
   for (var j = 0; j < splicen; ++j) {
     if (!arrays.length) {
