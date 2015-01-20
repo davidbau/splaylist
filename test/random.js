@@ -28,7 +28,7 @@ describe('Random operation tests', function() {
 this.timeout(8000);
 
 it(n + ' unshifts and nths on plain tree', function() {
-  this.slow(3000);
+  this.slow(3500);
   x = new SplayList();
   for (var j = 0; j < n; ++j) {
     x.unshift('node' + j);
@@ -77,7 +77,7 @@ for (var j = 0; j < n; ++j) {
 }
 
 it(n + ' unshifts and finds on an object tree', function() {
-  this.slow(3000);
+  this.slow(3500);
   x = new (SplayList.extend({orderstats: function(V, X, L, R) {
     var n = 1, k = V.k, m = V.s.length;
     if (L !== null) { n += L.n; k += L.k; m += L.m; }
