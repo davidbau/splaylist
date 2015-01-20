@@ -1,6 +1,6 @@
 // Run simple tests first.
-require('./api');
-require('./shape');
+// require('./api');
+// require('./shape');
 
 var SplayList = require('../splaylist').SplayList,
     assert = require('assert');
@@ -26,7 +26,10 @@ function array(a) {
   return a.slice();
 }
 
-time(n + ' unshifts and nths on plain tree', function() {
+describe('Random operation tests', function() {
+
+it(n + ' unshifts and nths on plain tree', function() {
+  this.slow(1000);
   x = new SplayList();
   for (var j = 0; j < n; ++j) {
     x.unshift('node' + j);
@@ -36,14 +39,15 @@ time(n + ' unshifts and nths on plain tree', function() {
   }
 });
 
-time('start-to-end traversal on a ' + n + ' plain tree', function() {
+it('start-to-end traversal on a ' + n + ' plain tree', function() {
   var loc = x.first();
   while (loc !== null) {
     loc = loc.next();
   }
 });
 
-time(n + ' unshifts and finds on total-length tree', function() {
+it(n + ' unshifts and finds on total-length tree', function() {
+  this.slow(1000);
   x = new (SplayList.extend({orderstats: function(V, X, L, R) {
     var n = 1, len = V.length;
     if (L !== null) { n += L.n; len += L.length; }
@@ -61,7 +65,7 @@ time(n + ' unshifts and finds on total-length tree', function() {
   assert.equal(888890, x.stat('length'));
 });
 
-time('start-to-end traversal on a ' + n + ' total-length tree', function() {
+it('start-to-end traversal on a ' + n + ' total-length tree', function() {
   var loc = x.first();
   while (loc !== null) {
     loc = loc.next();
@@ -73,7 +77,8 @@ for (var j = 0; j < n; ++j) {
   objs.push({ k: j % 97, s: "node" + j });
 }
 
-time(n + ' unshifts and finds on an object tree', function() {
+it(n + ' unshifts and finds on an object tree', function() {
+  this.slow(1000);
   x = new (SplayList.extend({orderstats: function(V, X, L, R) {
     var n = 1, k = V.k, m = V.s.length;
     if (L !== null) { n += L.n; k += L.k; m += L.m; }
@@ -92,7 +97,8 @@ time(n + ' unshifts and finds on an object tree', function() {
   assert.equal(total, x.stat('k'));
 });
 
-time(splicen + ' random splices on a plain tree', function() {
+it(splicen + ' random splices on a plain tree', function() {
+  this.slow(2000);
   var lists = [], arrays = [], index;
   for (var j = 0; j < splicen; ++j) {
     if (!arrays.length) {
@@ -166,3 +172,4 @@ time(splicen + ' random splices on a plain tree', function() {
   }
 });
 
+});

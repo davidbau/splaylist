@@ -476,7 +476,7 @@ set: function(loc, value) {
     loc = this.nth(index);
     if (loc === null) return;
   } else {
-    if (loc === null) return;
+    if (loc == null) return;
     splayUp(this, loc);
   }
   loc._V = value;
@@ -556,6 +556,8 @@ pop: function() {
   }
 },
 
+// Insert any number of values after the given location, and
+// return the location of first value inserted.
 insertAfter: function(location, value) {
   if (location === null) {
     this.unshift.apply(this, sliceargs(arguments, 1));
@@ -700,7 +702,8 @@ spliceList: function(first, limit, insert) {
     }
   }
   if (insert != null && insert._root !== null) {
-    if (insert.orderstats !== this.orderstats) {
+    if (insert.orderstats !== this.orderstats ||
+        insert.constructor !== this.constructor) {
       throw new Error('incompatible list');
     }
     if (limit == null) {
@@ -761,8 +764,8 @@ splice: function(loc, count) {
 },
 
 spliceArray: function(loc, count, values) {
-  var after, left, j, len, loc, result = [], numeric,
-      Loc = this.constructor.Location;
+  var after, left, j, len, loc, result = [], numeric;
+      // Loc = this.constructor.Location;
   if (count == null) count = Infinity;
   numeric = typeof(count) === 'number';
   if (loc === 0) loc = this.first();
@@ -791,10 +794,10 @@ spliceArray: function(loc, count, values) {
   }
   if (values.length === 0) return result;
   j = values.length - 1;
-  loc = new Loc(values[j]);
+  loc = new Location(values[j]);
   while (--j >= 0) {
     sub = loc;
-    loc = new Loc(values[j]);
+    loc = new Location(values[j]);
     loc._R = sub;
     sub._P = loc;
     reorder(this, sub);
@@ -806,7 +809,7 @@ spliceArray: function(loc, count, values) {
   //                  left  [1]
   //                          \
   //                           ...
-  left = after === null ? this._root : after._L;
+  left = (after === null ? this._root : after._L);
   if (left !== null) {
     loc._L = left;
     left._P = loc;
