@@ -113,6 +113,10 @@ assert.equal(list.pop(), 'after');
 assert.equal(list.shift(), 'unshifted');
 assert.equal(list.length, 1);
 assert.equal(list.get(0), 'before');
+list.push('to-remove');
+list.removeAt(1);
+assert.equal(list.length, 1);
+assert.equal(list.get(0), 'before');
 });
 
 it('can splice elements', function() {
@@ -195,6 +199,21 @@ assert.equal(list.last().prev(), loca.next());
 // insertAfter null is the same as unshift.
 var locp = list.insertAfter(null, "Almond");
 assert.equal(locp, list.first());
+
+list.removeRange(3, 3);
+assert.equal(list.get(4), 'Guava');
+list.removeRange(list.first().next(), 3);
+assert.equal(list.get(4), 'Watermelon');
+list.removeRange(null, 1);
+assert.equal(list.get(4), 'Watermelon');
+
+// set changes values.
+/*
+list.set(4, 'Honeydew');
+assert.equal(list.get(4), 'Honeydew');
+list.set(list.nth(4).prev(), 'Cantaloupe');
+assert.equal(list.first().next().next().next().val(), 'Cantaloupe');
+*/
 
 });
 

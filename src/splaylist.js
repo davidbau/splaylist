@@ -476,7 +476,7 @@ get: function(loc) {
 
 set: function(loc, value) {
   if (typeof(loc) === 'number') {
-    loc = this.nth(index);
+    loc = this.nth(loc);
     if (loc === null) return;
   } else {
     if (loc == null) return;
@@ -668,9 +668,7 @@ removeRange: function(first, limit) {
   if (typeof(first) === 'number') {
     first = this.nth(first);
   }
-  if (first == null) {
-    limit = null;
-  } else {
+  if (first != null) {
     if (typeof(limit) === 'number') {
       limit = forward(first, limit);
     }

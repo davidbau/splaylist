@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "test": "node_modules/.bin/mocha",
-    "coverage": "mkdir -p out; node_modules/.bin/mocha -r blanket -R html-cov > out/coverage.html"
+    "coverage": "mkdir -p out; node_modules/.bin/mocha -r blanket -R html-cov > out/coverage.html",
+    "server": "node_modules/.bin/http-server out"
   },
   "config": {
     "blanket": {
@@ -29,6 +30,7 @@
   "homepage": "https://github.com/davidbau/splaylist",
   "devDependencies": {
     "blanket": "latest",
+    "http-server": "latest",
     "mocha": "latest"
   }
 }
