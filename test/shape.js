@@ -24,7 +24,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 0th', function() {
-x.nth(0);
+x.find('n', 0);
 assert.equal(x.toString(),
   "   ┌╴node9 {n:1}\n" +
   " ┌╴node8 {n:9}\n" +
@@ -39,7 +39,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 1st', function() {
-x.nth(1);
+x.find('n', 1);
 assert.equal(x.toString(),
   "     ┌╴node9 {n:1}\n" +
   "   ┌╴node8 {n:3}\n" +
@@ -54,7 +54,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 2nd', function() {
-x.nth(2);
+x.find('n', 2);
 assert.equal(x.toString(),
   "     ┌╴node9 {n:1}\n" +
   "   ┌╴node8 {n:3}\n" +
@@ -69,7 +69,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 3rd', function() {
-x.nth(3);
+x.find('n', 3);
 assert.equal(x.toString(),
   "       ┌╴node9 {n:1}\n" +
   "     ┌╴node8 {n:3}\n" +
@@ -84,7 +84,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 4th', function() {
-x.nth(4);
+x.find('n', 4);
 assert.equal(x.toString(),
   "     ┌╴node9 {n:1}\n" +
   "   ┌╴node8 {n:3}\n" +
@@ -99,7 +99,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 5th', function() {
-x.nth(5);
+x.find('n', 5);
 assert.equal(x.toString(),
   "     ┌╴node9 {n:1}\n" +
   "   ┌╴node8 {n:3}\n" +
@@ -114,7 +114,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 6th', function() {
-x.nth(6);
+x.find('n', 6);
 assert.equal(x.toString(),
   "   ┌╴node9 {n:1}\n" +
   " ┌╴node8 {n:3}\n" +
@@ -129,7 +129,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 7th', function() {
-x.nth(7);
+x.find('n', 7);
 assert.equal(x.toString(),
   "   ┌╴node9 {n:1}\n" +
   " ┌╴node8 {n:2}\n" +
@@ -144,7 +144,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 8th', function() {
-x.nth(8);
+x.find('n', 8);
 assert.equal(x.toString(),
   " ┌╴node9 {n:1}\n" +
   "━node8 {n:10}\n" +
@@ -159,7 +159,7 @@ assert.equal(x.toString(),
 });
 
 it('splays 9th', function() {
-x.nth(9);
+x.find('n', 9);
 assert.equal(x.toString(),
   "━node9 {n:10}\n" +
   " └╴node8 {n:9}\n" +

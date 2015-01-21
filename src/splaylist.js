@@ -163,7 +163,6 @@ function splayUp(tree, x) {
   reorder(tree, x);
 }
 
-/*
 // Binary search: find first node where sum of key up to and including
 // that node would exceed value.
 function findByOrder(tree, key, value) {
@@ -189,7 +188,6 @@ function findByOrder(tree, key, value) {
   }
   return null;
 }
-*/
 
 // Global temporary object to avoid allocation.
 var globalStub = new Location();
@@ -291,6 +289,11 @@ function splayByOrder(tree, key, value) {
   reorder(tree, root);
   tree._root = root;
   return found;
+}
+
+function nth(tree, index) {
+  if (!splayByOrder(tree, 'n', index)) return null;
+  return tree._root;
 }
 
 function first(tree) {
@@ -466,7 +469,26 @@ orderstats: function(V, X, L, R) {
 },
 
 nth: function(index) {
-  return this.find('n', index);
+  /*
+  // Possible optimization: no mutations if the node is within
+  // the top three already.
+  var T = this._root;
+  if (T === null || index >= T.n) return null;
+  var L = T._L, N;
+  if (L === null) {
+    if (index == 0) return T;
+    N = 0;
+  } else {
+    N = L.n;
+    if (index === N) return T;
+    if (index === (L._L === null ? 0 : L._L.n)) return L;
+  }
+  var R = T._R;
+  if (R !== null) {
+    if (index === N + 1 + (R._L === null ? 0 : R._L.n)) return R;
+  }
+  */
+  return nth(this, index);
 },
 
 get: function(loc) {
@@ -476,7 +498,7 @@ get: function(loc) {
 
 set: function(loc, value) {
   if (typeof(loc) === 'number') {
-    loc = this.nth(loc);
+    loc = nth(this, loc);
     if (loc === null) return;
   } else {
     if (loc == null) return;
@@ -623,7 +645,7 @@ insertBefore: function(location, value) {
 
 removeAt: function(location) {
   if (typeof(location) === 'number') {
-    location = this.nth(location);
+    location = nth(this, location);
   } else {
     splayUp(this, location);
   }
@@ -676,7 +698,7 @@ removeRange: function(first, limit) {
 spliceList: function(first, limit, insert) {
   var result = new SplayList(), root, last, prev;
   if (typeof(first) === 'number') {
-    first = this.nth(first);
+    first = nth(this, first);
   }
   if (first == null) {
     limit = null;
