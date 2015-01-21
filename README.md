@@ -1,31 +1,31 @@
 splaylist.js
 =============
 
-Splay list with order statistics for Javascript.
+Splay-tree container with order statistics for Javascript.
 
 version 0.0.0<br>
 Author: David Bau<br>
 Date: 2014 Dec 31
 
-A SplayList provides **both** fast array-index and fast list-insertion
-access.  It is useful for situations such as tracking an array of
-thousands of lines of text when insertions and deletions must be instant,
-yet indexing by line number or character must also be fast,
+A SplayList is an array-like container that provides **both** fast
+array-index and fast list-insertion access.  It is useful for
+situations such as tracking an array of thousands of lines of
+text when insertions and deletions must be instant, yet where
+indexing by line number or character must also be fast,
 
 This array-or-list replacement provides:
 
 * A linked-list interface with O(1) (nanosecond) next() and prev(), and
   O(log n) (microsecond) insert(), remove(), splice() operations. These
   operations are all fast regardless of the number of elements.
-* An array-style interface for skipping to the nth(i) item, or determining
-  the integer position of a node in O(log n) (microsecond) time.  Again
-  fast even for a large number of elements.
+* An array-style interface for skipping to the nth(i) item, or getting
+  or setting the value at the ith position.
+* An order-statistic interface, for determining the integer position
+  of a node in O(log n) (microsecond) time.  Additional order statistics,
+  tracking running sums of any nonnegative weights of each value, can
+  be added by subclassing SplayList.
 
-The SplayList clas can also be extended to index items by multiple parallel
-order statistics, for example "total number of bytes to the left".
-Order statistics can be used in O(log n) time.
-
-Internally a SplayList is a balanced tree (a splay tree).  In practice,
+Internally a SplayList is an automatically balanced splay tree.  In practice,
 splay trees perform better than O(log n) because they take advantage
 of the typical locality of access in real applications.
 
